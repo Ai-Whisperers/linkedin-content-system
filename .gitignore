@@ -23,6 +23,7 @@ package-lock.json
 automation/screenshots/
 automation/carousel-data.json
 automation/*-data.json
+automation/browser-data/
 
 # Environment and secret files
 .env

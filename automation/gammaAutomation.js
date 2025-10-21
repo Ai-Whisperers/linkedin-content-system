@@ -12,11 +12,14 @@ const path = require('path');
  */
 const DEFAULT_CONFIG = {
   headless: false, // Set to true for production, false for debugging
-  slowMo: 500, // Slow down actions for visibility (ms)
-  timeout: 60000, // 60 second timeout
+  slowMo: 1000, // Slow down actions for visibility (ms)
+  timeout: 120000, // 120 second timeout (2 minutes)
+  navigationTimeout: 180000, // 180 second timeout for page loads (3 minutes)
   screenshotsDir: './automation/screenshots',
   theme: 'Professional', // Gamma theme
-  slideRatio: '16:9' // Standard for LinkedIn
+  slideRatio: '16:9', // Standard for LinkedIn
+  usePersistentContext: true, // Use persistent browser context to bypass Cloudflare
+  userDataDir: './automation/browser-data' // Directory for browser profile
 };
 
 /**
@@ -35,23 +38,73 @@ class GammaAutomation {
    */
   async init() {
     console.log('🚀 Launching browser...');
-    this.browser = await chromium.launch({
-      headless: this.config.headless,
-      slowMo: this.config.slowMo
-    });
 
-    const context = await this.browser.newContext({
-      viewport: { width: 1920, height: 1080 }
-    });
-
-    this.page = await context.newPage();
-    this.page.setDefaultTimeout(this.config.timeout);
-
-    // Create screenshots directory if it doesn't exist
+    // Create directories if they don't exist
     if (!fs.existsSync(this.config.screenshotsDir)) {
       fs.mkdirSync(this.config.screenshotsDir, { recursive: true });
     }
+    if (this.config.usePersistentContext && !fs.existsSync(this.config.userDataDir)) {
+      fs.mkdirSync(this.config.userDataDir, { recursive: true });
+    }
 
+    let context;
+
+    if (this.config.usePersistentContext) {
+      // Use persistent context to bypass Cloudflare
+      console.log('   Using persistent browser profile to bypass Cloudflare...');
+      context = await chromium.launchPersistentContext(this.config.userDataDir, {
+        headless: false, // Must be false for persistent context
+        slowMo: this.config.slowMo,
+        viewport: { width: 1920, height: 1080 },
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        locale: 'en-US',
+        args: [
+          '--disable-blink-features=AutomationControlled'
+        ]
+      });
+
+      this.browser = context; // Store context as browser for cleanup
+      this.page = context.pages()[0] || await context.newPage();
+    } else {
+      // Regular browser context (will likely fail with Cloudflare)
+      this.browser = await chromium.launch({
+        headless: this.config.headless,
+        slowMo: this.config.slowMo,
+        args: [
+          '--disable-blink-features=AutomationControlled'
+        ]
+      });
+
+      context = await this.browser.newContext({
+        viewport: { width: 1920, height: 1080 },
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        locale: 'en-US',
+        timezoneId: 'America/New_York',
+        permissions: []
+      });
+
+      // Add stealth scripts to avoid detection
+      await context.addInitScript(() => {
+        // Override the navigator.webdriver property
+        Object.defineProperty(navigator, 'webdriver', {
+          get: () => false,
+        });
+
+        // Mock plugins to appear more like a real browser
+        Object.defineProperty(navigator, 'plugins', {
+          get: () => [1, 2, 3, 4, 5],
+        });
+
+        // Mock languages
+        Object.defineProperty(navigator, 'languages', {
+          get: () => ['en-US', 'en'],
+        });
+      });
+
+      this.page = await context.newPage();
+    }
+
+    this.page.setDefaultTimeout(this.config.timeout);
     console.log('✓ Browser launched');
   }
 
@@ -60,16 +113,30 @@ class GammaAutomation {
    */
   async navigateToGamma() {
     console.log('🔗 Navigating to Gamma.app...');
-    await this.page.goto('https://gamma.app', { waitUntil: 'networkidle' });
-    await this.takeScreenshot('01-gamma-homepage');
+    console.log('   (This may take up to 3 minutes depending on your connection)');
 
-    console.log('\n⚠️  MANUAL STEP REQUIRED:');
-    console.log('Please log in to your Gamma account in the browser window.');
-    console.log('Press ENTER in this terminal once you are logged in and ready to continue...\n');
+    try {
+      await this.page.goto('https://gamma.app', {
+        waitUntil: 'domcontentloaded',
+        timeout: this.config.navigationTimeout
+      });
+      await this.page.waitForTimeout(3000); // Wait 3 seconds for page to stabilize
+      await this.takeScreenshot('01-gamma-homepage');
+      console.log('✓ Page loaded successfully');
+    } catch (error) {
+      console.log('⚠️  Page load took longer than expected, but continuing...');
+      await this.takeScreenshot('01-gamma-homepage-timeout');
+    }
+
+    console.log('\n⚠️  MANUAL STEPS REQUIRED:');
+    console.log('1. Complete Cloudflare verification if it appears');
+    console.log('2. Log in to your Gamma account (login will be saved for future runs)');
+    console.log('3. Once logged in and on the Gamma dashboard, press ENTER in this terminal');
+    console.log('\nℹ️  TIP: Your login will be saved, so you only need to do this once!\n');
 
     // Wait for manual login
     await this.waitForUserInput();
-    console.log('✓ Login confirmed');
+    console.log('✓ Login and verification confirmed');
   }
 
   /**
@@ -88,31 +155,16 @@ class GammaAutomation {
    */
   async createNewPresentation(title) {
     console.log('📄 Creating new presentation...');
+    console.log('\n⚠️  MANUAL STEP:');
+    console.log('1. Click "Create new" or "New" button in Gamma');
+    console.log('2. Select "Presentation" or "Blank presentation"');
+    console.log('3. Wait for the editor to load');
+    console.log('4. Press ENTER in this terminal to continue\n');
 
-    try {
-      // Look for "New" or "Create" button
-      await this.page.waitForSelector('button:has-text("New"), button:has-text("Create")', {
-        timeout: 10000
-      });
-
-      await this.page.click('button:has-text("New"), button:has-text("Create")');
-      await this.page.waitForTimeout(2000);
-
-      // Look for "Presentation" option
-      await this.page.click('text=Presentation, text=Blank presentation', {
-        timeout: 5000
-      }).catch(() => {
-        console.log('Note: "Presentation" option not found, continuing...');
-      });
-
-      await this.takeScreenshot('02-new-presentation');
-      console.log('✓ New presentation created');
-    } catch (error) {
-      console.log(`⚠️  Could not automatically create presentation: ${error.message}`);
-      console.log('Please manually click "New" and select "Presentation".');
-      console.log('Press ENTER once you have created a new presentation...\n');
-      await this.waitForUserInput();
-    }
+    await this.waitForUserInput();
+    await this.page.waitForTimeout(2000);
+    await this.takeScreenshot('02-new-presentation');
+    console.log('✓ Ready to add slides');
   }
 
   /**
@@ -120,36 +172,29 @@ class GammaAutomation {
    * @param {Object} slide - Slide data with title and content
    */
   async addSlide(slide) {
-    console.log(`\n📝 Adding Slide ${slide.number}: ${slide.type}`);
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`📝 Slide ${slide.number}/${this.totalSlides}: ${slide.type}`);
+    console.log('='.repeat(60));
 
-    try {
-      // Wait a moment for the previous slide to be processed
-      await this.page.waitForTimeout(1000);
-
-      // Add title
-      if (slide.title) {
-        console.log(`   Title: ${slide.title.substring(0, 50)}...`);
-        await this.typeIntoActiveSlide(slide.title, true);
-      }
-
-      // Add content
-      if (slide.content) {
-        console.log(`   Content: ${slide.content.substring(0, 50)}...`);
-        await this.typeIntoActiveSlide(slide.content, false);
-      }
-
-      // Add new slide for next iteration
-      if (slide.number < this.totalSlides) {
-        await this.addNewSlide();
-      }
-
-      await this.takeScreenshot(`03-slide-${slide.number}`);
-      console.log(`✓ Slide ${slide.number} added`);
-    } catch (error) {
-      console.error(`❌ Error adding slide ${slide.number}:`, error.message);
-      console.log('Press ENTER to continue with next slide...');
-      await this.waitForUserInput();
+    if (slide.title) {
+      console.log(`\n📌 TITLE:`);
+      console.log(slide.title);
     }
+
+    if (slide.content) {
+      console.log(`\n📄 CONTENT:`);
+      console.log(slide.content);
+    }
+
+    console.log('\n⚠️  ACTION REQUIRED:');
+    console.log('1. Copy the title and content above');
+    console.log('2. Paste into your Gamma slide');
+    console.log('3. Add a new slide for the next one (if not the last slide)');
+    console.log('4. Press ENTER to continue to next slide\n');
+
+    await this.waitForUserInput();
+    await this.takeScreenshot(`03-slide-${slide.number}`);
+    console.log(`✓ Slide ${slide.number} marked complete`);
   }
 
   /**
@@ -165,13 +210,13 @@ class GammaAutomation {
 
       // Click and type
       await this.page.click(selector);
-      await this.page.waitForTimeout(500);
-      await this.page.keyboard.type(content, { delay: 50 });
+      await this.page.waitForTimeout(1000); // Increased wait time
+      await this.page.keyboard.type(content, { delay: 100 }); // Slower typing
 
       // Move to next section if this is a title
       if (isTitle) {
         await this.page.keyboard.press('Tab');
-        await this.page.waitForTimeout(500);
+        await this.page.waitForTimeout(1000); // Increased wait time
       }
     } catch (error) {
       console.log(`   ℹ️  Manual input may be needed: ${error.message}`);
@@ -185,7 +230,7 @@ class GammaAutomation {
     try {
       // Try keyboard shortcut first (most reliable)
       await this.page.keyboard.press('Enter');
-      await this.page.waitForTimeout(1000);
+      await this.page.waitForTimeout(2000); // Increased wait time for new slide
     } catch (error) {
       console.log('   ℹ️  Using manual slide addition');
       console.log('Please add a new slide manually, then press ENTER...');
@@ -205,7 +250,7 @@ class GammaAutomation {
         timeout: 5000
       });
 
-      await this.page.waitForTimeout(1000);
+      await this.page.waitForTimeout(2000); // Increased wait time
       await this.takeScreenshot('04-theme-selector');
 
       console.log('⚠️  Please manually select the theme and press ENTER to continue...');
@@ -231,7 +276,7 @@ class GammaAutomation {
         timeout: 5000
       });
 
-      await this.page.waitForTimeout(1000);
+      await this.page.waitForTimeout(2000); // Increased wait time
       await this.takeScreenshot('05-export-menu');
 
       console.log(`⚠️  Please manually select "${format}" export format`);
@@ -285,7 +330,10 @@ class GammaAutomation {
       }
 
       // Add all slides
-      console.log(`\n📊 Adding ${this.totalSlides} slides...`);
+      console.log(`\n📊 Ready to add ${this.totalSlides} slides...`);
+      console.log('The script will show you each slide\'s content.');
+      console.log('You\'ll manually paste it into Gamma, then press ENTER to continue.\n');
+
       for (const slide of carouselData.slides) {
         await this.addSlide(slide);
       }

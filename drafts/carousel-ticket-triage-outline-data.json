@@ -1,0 +1,64 @@
+{
+  "metadata": {
+    "document_type": "Carousel Outline for Gamma",
+    "version": "1.0",
+    "date": "2025-10-20",
+    "status": "Draft",
+    "title": "\"Agentized Ticket Triage in 20 Minutes\"",
+    "slides": "7",
+    "target_audience": "Operations managers, support leads, DevOps teams",
+    "tone": "Practical, step-by-step, builder-focused",
+    "visual_style": "Clean, neutral background, small AI-Whisperers logo, readable sans-serif typography"
+  },
+  "slides": [
+    {
+      "number": 1,
+      "type": "Hook",
+      "title": "30% Faster Ticket Resolution",
+      "content": "Here's how we built a triage agent in 20 minutes that cut handle time by 30%.\n\nNo magic. Just measurement.",
+      "visualNotes": ""
+    },
+    {
+      "number": 2,
+      "type": "Problem",
+      "title": "Support Queues Are Broken",
+      "content": "• Everything looks urgent\n• Agents waste time sorting, not solving\n• Complex issues get buried in noise",
+      "visualNotes": ""
+    },
+    {
+      "number": 3,
+      "type": "Framework",
+      "title": "The 4-Lane Triage Model",
+      "content": "1. Auto-Resolve → Password resets, FAQs\n2. Low-Touch → Simple requests, 1-step fixes\n3. Complex → Multi-step, requires judgment\n4. Escalate → Critical, senior attention",
+      "visualNotes": ""
+    },
+    {
+      "number": 4,
+      "type": "Steps (Build in 20 Minutes)",
+      "title": "Setup in 20 Minutes",
+      "content": "1. Export 500 historical tickets (CSV)\n2. Train classifier on urgency + complexity\n3. Connect to ticket system API\n4. Test with 50 new tickets\n5. Deploy to production triage lane",
+      "visualNotes": ""
+    },
+    {
+      "number": 5,
+      "type": "Example (Real Pilot Results)",
+      "title": "Real Results, 6-Week Pilot",
+      "content": "Before:\n• 45 min average handle time\n• 80% agent time on triage\n\nAfter:\n• 30 min average handle time (−30%)\n• 50% agent time on triage\n• Happier team, fewer burnouts",
+      "visualNotes": ""
+    },
+    {
+      "number": 6,
+      "type": "Mistakes (What We Got Wrong)",
+      "title": "3 Things We Got Wrong",
+      "content": "1. Tried to automate everything at once → Started with 1 lane instead\n2. Skipped training → Agent misrouted 20% of tickets initially\n3. No feedback loop → Added human review for edge cases",
+      "visualNotes": ""
+    },
+    {
+      "number": 7,
+      "type": "CTA (Call-to-Action)",
+      "title": "Try It Yourself",
+      "content": "Download our triage playbook (link in comments) or DM me for the full pilot guide.\n\nStart small. Measure early. Scale smart.\n\nFollow @AI-Whisperers for more multi-agent frameworks.",
+      "visualNotes": "We built a ticket triage agent that cut handle time by 30%. Here's how we did it in 20 minutes ⚡\n\nSwipe through for the full framework: the 4-lane model, step-by-step setup, real pilot results, and 3 mistakes we made (so you don't have to).\n\nThe key: we didn't try to automate everything. We automated triage, then let humans focus on complex problems.\n\nDownload the full playbook (link in comments) or DM me for the pilot guide.\n\nWhat's one workflow you'd automate if you could start small?\n\n#Automation #Operations #MultiAgentSystems #AI"
+    }
+  ]
+}

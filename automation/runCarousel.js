@@ -140,6 +140,26 @@ For more information, see automation/README.md
     process.exit(1);
   }
 
+  // Check if it's a directory instead of a file
+  if (fs.statSync(markdownFile).isDirectory()) {
+    console.error(`❌ Error: Expected a file, but got a directory: ${markdownFile}`);
+    console.error('\n📁 Available carousel files in this directory:\n');
+
+    const files = fs.readdirSync(markdownFile)
+      .filter(f => f.endsWith('.md') && f.includes('carousel'));
+
+    if (files.length > 0) {
+      files.forEach(file => {
+        console.error(`   • ${path.join(markdownFile, file)}`);
+      });
+      console.error('\n💡 Try running:');
+      console.error(`   npm run carousel ${path.join(markdownFile, files[0])}`);
+    } else {
+      console.error('   (No carousel markdown files found)');
+    }
+    process.exit(1);
+  }
+
   // Run automation
   runCarouselAutomation(markdownFile, options);
 }
