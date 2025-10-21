@@ -1,9 +1,9 @@
 # AI-Whisperers LinkedIn Content System - Action Plan
 
-**Document Version:** 1.0
-**Date:** 2025-10-20
+**Document Version:** 1.1
+**Date:** 2025-10-21
 **Status:** Implementation Ready
-**Owner:** Kyrian Weiss (Founder, AI-Whisperers)
+**Leadership Team:** Kyrian Weiss & Ivan Weiss (Co-Founders), Jonathan Verdun (CTO)
 
 ---
 
@@ -25,7 +25,9 @@ This action plan transforms LINKEDINCONTEXT.md into an executable roadmap for bu
 
 **Verified URLs:**
 - **Company Page:** `https://www.linkedin.com/company/109482114/`
-- **Founder Profile:** `https://www.linkedin.com/in/ai-whisperers-50676a382/`
+- **Kyrian Weiss Profile:** `https://www.linkedin.com/in/ai-whisperers-50676a382/`
+- **Ivan Weiss Profile:** `https://www.linkedin.com/in/ivanweissvanderpol/`
+- **Jonathan Verdun Profile:** `https://www.linkedin.com/in/jonathan-verdun/`
 
 **Actions:**
 - [x] Verify correct LinkedIn company page URL

@@ -1,9 +1,9 @@
 # AI-Whisperers Brand Brief
 
 **Document Type:** Single-Source Brand Reference
-**Version:** 1.2
-**Date:** 2025-10-20
-**Owners:** Ivan Weiss & Kyrian Weiss, Co-Founders
+**Version:** 1.3
+**Date:** 2025-10-21
+**Leadership:** Ivan Weiss & Kyrian Weiss (Co-Founders), Jonathan Verdun (CTO)
 
 ---
 
@@ -20,9 +20,10 @@
 **Geography:** Paraguay (LATAM) + European Union (LATAM-EU bridge)
 
 **LinkedIn Pages:**
-- **Company Page:** https://www.linkedin.com/company/109482114/
-- **Co-Founder (Kyrian Weiss):** https://www.linkedin.com/in/ai-whisperers-50676a382/
-- **Co-Founder (Ivan Weiss):** [URL to be added if applicable]
+- **Company Page:** https://www.linkedin.com/in/ai-whisperers-50676a382/ (PRIMARY posting account)
+- **Kyrian Weiss (Co-Founder):** https://www.linkedin.com/in/kyrian-weiss-vdp-9b648a326/
+- **Ivan Weiss (Co-Founder):** https://www.linkedin.com/in/ivanweissvanderpol/
+- **Jonathan Verdun (CTO):** https://www.linkedin.com/in/jonathan-verdun/
 
 ---
 
@@ -304,8 +305,9 @@ AI-Whisperers designs "agentized" workflows that turn standard operating procedu
 
 ---
 
-**Document Owner:** Kyrian Weiss (Founder, AI-Whisperers)
-**Last Updated:** 2025-10-20
+**Document Owner:** Leadership Team (Kyrian Weiss, Ivan Weiss, Jonathan Verdun)
+**Last Updated:** 2025-10-21
+**Version:** 1.3
 **Status:** Active Reference
 
 *This brand brief is the single source of truth for all AI-Whisperers content and communication. When creating LinkedIn posts, profiles, or other materials, align with this document first.*

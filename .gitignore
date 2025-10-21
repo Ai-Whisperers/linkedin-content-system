@@ -15,13 +15,48 @@ desktop.ini
 *.bak
 *.log
 
-# Node modules (if any)
+# Node modules and dependencies
 node_modules/
+package-lock.json
 
-# Environment files (if any sensitive data)
+# Automation outputs
+automation/screenshots/
+automation/carousel-data.json
+automation/*-data.json
+
+# Environment and secret files
 .env
-.env.local
+.env.*
+!.env.example
+!.env.test.template
+*.key
+*.pem
+credentials.json
+secrets.json
+auth.json
+tokens.json
+
+# API keys and authentication
+*_api_key.txt
+*_token.txt
+*_secret.txt
+*_credentials.txt
+
+# Gamma.app session data
+automation/session/
+automation/.auth/
+playwright/.auth/
+
+# LinkedIn API credentials (if added)
+linkedin_auth.json
+linkedin_token.json
 
 # Build outputs (if applicable)
 dist/
 build/
+
+# Test outputs and coverage
+tests/coverage/
+tests/temp/
+*.test.log
+.jest-cache/

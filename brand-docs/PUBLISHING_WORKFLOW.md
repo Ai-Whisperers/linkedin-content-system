@@ -1,8 +1,8 @@
 # AI-Whisperers LinkedIn Publishing Workflow
 
 **Document Type:** Process Documentation
-**Version:** 1.0
-**Date:** 2025-10-20
+**Version:** 1.1
+**Date:** 2025-10-21
 **Status:** Active
 
 ---
@@ -18,6 +18,7 @@ This document outlines the step-by-step process for creating, reviewing, approvi
 ## Workflow Stages
 
 ### Stage 1: Draft
+### Stage 1.5: Create Carousel (Gamma) - If Applicable
 ### Stage 2: Quality Check
 ### Stage 3: Review
 ### Stage 4: Polish
@@ -60,39 +61,115 @@ This document outlines the step-by-step process for creating, reviewing, approvi
 
 ---
 
+## Stage 1.5: Create Carousel (Gamma) - If Applicable
+
+**Objective:** Create visual carousel content using Gamma for posts marked as "Carousel" type
+
+**Trigger:** Post metadata shows `Content Type = Carousel`
+
+**Actions:**
+1. **Verify draft text is complete** (Stage 1 must be finished first)
+
+2. **Open Gamma:**
+   - Go to https://gamma.app
+   - Create new presentation (choose "Start from scratch" or use template)
+
+3. **Structure carousel slides (5-7 slides recommended):**
+   - **Slide 1 (Hook):**
+     - Title: Use the hook from your post
+     - Visual: Key metric, question, or contrarian statement
+     - Branding: Add AI-Whisperers logo (subtle, top-right or bottom-left)
+
+   - **Slides 2-3 (Insight):**
+     - Break down the "why" or lesson learned
+     - Use diagrams, icons, or simple visuals
+     - Keep text minimal (bullet points, max 15-20 words per slide)
+
+   - **Slide 4-5 (Example):**
+     - Show concrete use case with numbers
+     - Visual: Chart, before/after comparison, or process diagram
+     - Highlight specific metrics from your post
+
+   - **Slide 6 (Takeaway):**
+     - Display actionable principle or framework
+     - Visual: Simple diagram or numbered steps
+     - Make it screenshot-worthy (people share valuable frameworks)
+
+   - **Slide 7 (CTA):**
+     - Call to action from your post
+     - Add AI-Whisperers branding/contact info
+     - Optional: QR code or link to resource
+
+4. **Apply brand design principles:**
+   - Use clean, neutral backgrounds (avoid busy patterns)
+   - Readable typography (sans-serif, minimum 24pt font)
+   - Consistent color palette (grays + one accent color)
+   - Data visualization over stock photos
+   - Ensure slides are mobile-friendly (text not too small)
+
+5. **Export carousel for LinkedIn:**
+   - Download as images (PNG or JPG)
+   - Recommended size: 1080x1080px (square format for LinkedIn)
+   - Alternatively: Export as PDF if LinkedIn upload supports it
+
+6. **Save Gamma link in post metadata:**
+   - Add field: `Gamma Link: [your-gamma-presentation-url]`
+   - This allows future edits if founder requests changes
+
+7. **Attach exported slides to draft:**
+   - Save images in `drafts/posts/XXX-[topic-slug]/slides/`
+   - Number slides sequentially: `slide-01.png`, `slide-02.png`, etc.
+
+**Time Estimate:** 20-30 minutes
+
+**Output:** Gamma presentation link + exported carousel images ready for review
+
+**Skip this stage if:** Post is NOT a Carousel type (How-To, Case Study, Opinion, Framework text posts don't need Gamma)
+
+---
+
 ## Stage 2: Quality Check
 
 **Objective:** Self-review against brand standards and quality checklist
 
 **Actions:**
 1. Open `brand-docs/QUALITY_CHECKLIST.md` (or use checklist in POST_TEMPLATE.md)
-2. Verify Content Standards:
+
+2. **If Carousel post:** Review Gamma slides first:
+   - [ ] All slides match approved post text
+   - [ ] Visuals are clear and support the message
+   - [ ] Branding is subtle and consistent
+   - [ ] Text is readable on mobile (font size adequate)
+   - [ ] Slides follow brand design principles (clean, minimal)
+   - [ ] 5-7 slides total (not too short or too long)
+
+3. Verify Content Standards:
    - [ ] Metric is specific and traceable (or labeled "anecdotal")
    - [ ] No buzzwords ("AI magic," "revolutionary," "game-changing")
    - [ ] Tone is pragmatic and builder-focused
    - [ ] Example is concrete, not vague
    - [ ] Takeaway is actionable
 
-3. Verify Structure:
+4. Verify Structure:
    - [ ] Hook grabs attention (metric, question, or contrarian statement)
    - [ ] Insight explains "why" or shares lesson
    - [ ] Example includes numbers or specific details
    - [ ] Takeaway is clear and reusable
    - [ ] CTA invites engagement or offers value
 
-4. Verify Formatting:
+5. Verify Formatting:
    - [ ] 120-180 word count
    - [ ] Maximum 2 emojis
    - [ ] 4 hashtags (2 broad + 2 niche)
    - [ ] Line breaks for readability
    - [ ] No typos or grammatical errors
 
-5. Verify Brand Alignment:
+6. Verify Brand Alignment:
    - [ ] Matches AI-Whisperers tone (see `brand-docs/BRAND_BRIEF.md`)
    - [ ] "Builders talking to builders" empathy
    - [ ] Focus on clarity, utility, credibility
 
-6. If any items fail, revise draft and re-check
+7. If any items fail, revise draft (and Gamma slides if applicable) and re-check
 
 **Time Estimate:** 10-15 minutes
 
@@ -107,11 +184,13 @@ This document outlines the step-by-step process for creating, reviewing, approvi
 **Actions:**
 1. **Writer:** Update post status to "Review" in metadata
 2. **Writer:** Notify founder (via Slack, email, or comment in draft file)
+   - **If Carousel:** Include Gamma link in notification for visual review
 3. **Founder:** Review draft against:
    - Brand voice alignment
    - Accuracy of metrics and claims
    - Messaging consistency with company positioning
    - Appropriateness for target audience
+   - **If Carousel:** Visual quality, slide coherence, brand consistency
 
 4. **Founder:** Provide feedback:
    - **Approve:** Mark as "Approved" in metadata, move to Stage 4
@@ -130,6 +209,7 @@ This document outlines the step-by-step process for creating, reviewing, approvi
 
 **Actions:**
 1. **If feedback provided:** Revise post based on founder's comments
+   - **If Carousel with visual feedback:** Update Gamma slides, re-export images
 2. **Final formatting check:**
    - Ensure spacing and line breaks are LinkedIn-friendly
    - Verify hashtags are correctly formatted (no spaces: #MultiAgentSystems)
@@ -155,12 +235,17 @@ This document outlines the step-by-step process for creating, reviewing, approvi
 2. **Create new post:**
    - Paste final post copy from Stage 4
    - Verify formatting rendered correctly (line breaks, emojis, hashtags)
-   - Add media if applicable (carousel, image, video)
+   - **If Carousel:** Upload carousel images in correct order
+     - Click "Add media" → Select multiple images
+     - Upload slides in sequence (slide-01.png, slide-02.png, etc.)
+     - Verify all slides uploaded correctly and display in order
+     - Preview carousel on mobile view to check readability
 
 3. **Review preview** before publishing:
    - Check for broken formatting
    - Ensure hashtags are clickable (LinkedIn auto-links)
    - Verify CTA is clear
+   - **If Carousel:** Swipe through all slides to ensure correct order and visibility
 
 4. **Publish post** (or schedule via LinkedIn native scheduler)
 5. **Immediately after publishing:**
@@ -340,10 +425,12 @@ A post is ready to publish when:
 ## Workflow Diagram (Text Format)
 
 ```
-[Draft] → [Quality Check] → [Review] → [Polish] → [Publish] → [Engage] → [Track]
-   ↓             ↓              ↓          ↓           ↓           ↓          ↓
-Writer      Writer         Founder    Writer      Writer      Writer     Writer
-30-45m      10-15m         5-10m      5-10m       5m          15-30m     5m
+[Draft] → [Gamma*] → [Quality Check] → [Review] → [Polish] → [Publish] → [Engage] → [Track]
+   ↓         ↓             ↓              ↓          ↓           ↓           ↓          ↓
+Writer    Writer        Writer         Founder    Writer      Writer      Writer     Writer
+30-45m    20-30m*       10-15m         5-10m      5-10m       5m          15-30m     5m
+
+* Gamma stage only applies to Carousel content type
 ```
 
 ---
@@ -375,6 +462,7 @@ Writer      Writer         Founder    Writer      Writer      Writer     Writer
 | Version | Date | Changes | Approver |
 |---------|------|---------|----------|
 | 1.0 | 2025-10-20 | Initial workflow based on LINKEDINCONTEXT.md | Pending |
+| 1.1 | 2025-10-21 | Added Stage 1.5 (Gamma carousel creation), updated Quality Check, Review, Polish, and Publish stages to include carousel workflow | Pending |
 
 ---
 
@@ -389,6 +477,6 @@ Writer      Writer         Founder    Writer      Writer      Writer     Writer
 
 **Document Owner:** AI-Whisperers Content Team
 **Status:** Active
-**Last Updated:** 2025-10-20
+**Last Updated:** 2025-10-21
 
 *This workflow ensures consistent quality, brand alignment, and measurable outcomes for all AI-Whisperers LinkedIn content.*

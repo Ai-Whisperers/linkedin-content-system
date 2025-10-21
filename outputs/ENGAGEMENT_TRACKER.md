@@ -1,9 +1,10 @@
 # AI-Whisperers LinkedIn Engagement Tracker
 
 **Document Type:** Metrics Logging & Analysis
-**Version:** 1.0
-**Date:** 2025-10-20
+**Version:** 2.0 - Multi-Author Tracking
+**Date:** 2025-10-21
 **Status:** Active
+**Note:** Tracks posts from all three leaders (Kyrian, Ivan, Jonathan)
 
 ---
 
@@ -22,6 +23,7 @@ Track LinkedIn post performance to identify what resonates with the audience and
 
 ### Post 001: How-To - Triage Agent (30% Handle Time)
 
+**Author:** Kyrian Weiss
 **Published:** [Date]
 **URL:** [LinkedIn Post URL]
 **Content Type:** How-To

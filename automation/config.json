@@ -1,0 +1,24 @@
+{
+  "gamma": {
+    "url": "https://gamma.app",
+    "theme": "Professional",
+    "slideRatio": "16:9",
+    "fontFamily": "Inter",
+    "colorPalette": "neutral"
+  },
+  "automation": {
+    "headless": false,
+    "slowMo": 300,
+    "timeout": 60000,
+    "screenshotsEnabled": true,
+    "screenshotsDir": "./automation/screenshots"
+  },
+  "export": {
+    "format": "PDF",
+    "outputDir": "./outputs/carousels"
+  },
+  "brand": {
+    "logoPath": "./assets/ai-whisperers-logo.png",
+    "logoPlacement": "bottom-right"
+  }
+}

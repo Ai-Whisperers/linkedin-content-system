@@ -18,7 +18,9 @@ This repository contains a complete LinkedIn content system for AI-Whisperers, d
 ## What's Inside
 
 ### 📋 Planning & Strategy
+Located in `/docs/strategy/`:
 - **ACTION_PLAN.md** - Comprehensive 4-week implementation roadmap with phases, tasks, and deliverables
+- **CO-FOUNDER_STRATEGY.md** - Three-person leadership team strategy (Kyrian, Ivan, Jonathan)
 - **LINKEDINCONTEXT.md** - Source requirements document (8 phases of instructions)
 
 ### 🎨 Brand & Guidelines
@@ -54,8 +56,9 @@ Located in `/drafts/posts/`:
 
 ### Step 1: Review Brand Foundation
 1. Read `brand-docs/BRAND_BRIEF.md` (2 pages - core identity, tone, values)
-2. Review `ACTION_PLAN.md` for full implementation roadmap
-3. Verify LinkedIn URLs (company + founder pages)
+2. Review `docs/strategy/ACTION_PLAN.md` for full implementation roadmap
+3. Review `docs/strategy/CO-FOUNDER_STRATEGY.md` for leadership team strategy
+4. Verify LinkedIn URLs (company + founder pages)
 
 ### Step 2: Update LinkedIn Profiles
 1. Review `outputs/company-page-copy.md`
@@ -70,11 +73,15 @@ Located in `/drafts/posts/`:
 4. Publish following `brand-docs/PUBLISHING_WORKFLOW.md`
 5. Log metrics in `outputs/ENGAGEMENT_TRACKER.md`
 
-### Step 4: Create Gamma Carousel
-1. Review `drafts/carousel-ticket-triage-outline.md`
-2. Import into Gamma (https://gamma.app)
-3. Export as PDF or PNG set
-4. Publish to LinkedIn as carousel post
+### Step 4: Create Gamma Carousel (AUTOMATED!)
+1. Run automation: `npm run carousel drafts/carousel-ticket-triage-outline.md`
+2. Log in to Gamma when prompted
+3. Let automation create all 7 slides
+4. Export as PDF from Gamma
+5. Publish to LinkedIn as carousel post
+
+**NEW: Playwright automation saves 20-30 minutes per carousel!**
+See `automation/QUICK_START.md` for details.
 
 ### Step 5: Follow Content Calendar
 1. Review `outputs/CONTENT_CALENDAR.md` (30-day schedule)
@@ -88,8 +95,63 @@ Located in `/drafts/posts/`:
 ```
 contentCreator/
 ├── README.md (this file)
-├── ACTION_PLAN.md (implementation roadmap)
-├── LINKEDINCONTEXT.md (source requirements)
+├── package.json (Node.js dependencies)
+├── jest.config.js (unit testing configuration)
+├── jest.e2e.config.js (E2E testing configuration)
+├── .env.test.template (environment template for testing)
+│
+├── docs/ 📁 All documentation organized by type
+│   ├── strategy/
+│   │   ├── ACTION_PLAN.md (implementation roadmap)
+│   │   ├── CO-FOUNDER_STRATEGY.md (leadership team strategy)
+│   │   ├── LEADERSHIP_STRATEGY_SUMMARY.md (executive summary)
+│   │   ├── LEADERSHIP_POST_TEMPLATES.md (leadership content templates)
+│   │   ├── LINKEDINCONTEXT.md (source requirements)
+│   │   ├── COMPANY_PAGE_STRATEGY_SUMMARY.md (company page strategy)
+│   │   ├── COMPANY_PAGE_FIRST_STRATEGY.md (initial company page approach)
+│   │   ├── DUAL_PAGE_STRATEGY.md (dual LinkedIn page strategy)
+│   │   ├── FINAL_STRATEGY_SUMMARY.md (overall strategy summary)
+│   │   ├── LINKEDIN_PAGES_CLARIFICATION.md (page structure clarification)
+│   │   └── LINKEDIN_URLS_CORRECT.md (URL verification)
+│   │
+│   ├── testing/
+│   │   ├── TESTING_PLAN.md (comprehensive testing strategy)
+│   │   ├── TESTING_QUICK_START.md (quick setup guide)
+│   │   ├── TESTING_SUMMARY.md (testing overview)
+│   │   ├── TEST_ARCHITECTURE.md (detailed architecture)
+│   │   ├── TEST_ARCHITECTURE_SUMMARY.md (architecture summary)
+│   │   ├── TEST_COVERAGE_ANALYSIS.md (coverage reports)
+│   │   ├── TEST_RESULTS.md (test execution results)
+│   │   ├── E2E_TEST_PLAN.md (end-to-end testing plan)
+│   │   ├── E2E_IMPLEMENTATION_SUMMARY.md (E2E implementation details)
+│   │   └── GAMMA_AUTOMATION_TESTS.md (Gamma automation test specs)
+│   │
+│   ├── automation/
+│   │   ├── N8N_INTEGRATION_SUMMARY.md (executive summary)
+│   │   ├── N8N_LINKEDIN_INTEGRATION_PLAN.md (detailed implementation)
+│   │   ├── N8N_QUICK_START.md (quick start guide)
+│   │   └── N8N_WORKFLOW_DIAGRAMS.md (workflow visualizations)
+│   │
+│   └── setup/
+│       ├── AUTOMATION_SETUP.md (automation configuration)
+│       ├── COVERAGE_SNAPSHOT.md (test coverage snapshot)
+│       ├── DOCUMENTATION_UPDATE_SUMMARY.md (documentation changes)
+│       ├── IMPLEMENTATION_COMPLETE.md (implementation status)
+│       └── URL_UPDATE_SUMMARY.md (URL update history)
+│
+├── automation/ ⚡ Playwright automation for Gamma
+│   ├── README.md (full automation documentation)
+│   ├── QUICK_START.md (5-minute setup guide)
+│   ├── config.json (automation settings)
+│   ├── runCarousel.js (main automation script)
+│   ├── parseCarousel.js (markdown parser)
+│   ├── gammaAutomation.js (Playwright automation)
+│   └── validators/ (quality check scripts)
+│       ├── buzzwordDetector.js
+│       ├── emojiCounter.js
+│       ├── hashtagValidator.js
+│       ├── wordCountValidator.js
+│       └── runQualityChecks.js
 │
 ├── brand-docs/
 │   ├── BRAND_BRIEF.md (brand identity reference)
@@ -100,17 +162,41 @@ contentCreator/
 │   ├── company-page-copy.md (LinkedIn company page)
 │   ├── founder-profile-copy.md (LinkedIn founder profile)
 │   ├── CONTENT_CALENDAR.md (30-day schedule)
-│   └── ENGAGEMENT_TRACKER.md (metrics template)
+│   ├── ENGAGEMENT_TRACKER.md (metrics template)
+│   └── carousels/ (exported Gamma presentations)
 │
 ├── drafts/
 │   ├── POST_TEMPLATE.md (standardized format)
+│   ├── COMPANY_PAGE_POST_TEMPLATES.md (company page templates)
 │   ├── carousel-ticket-triage-outline.md (Gamma carousel)
 │   └── posts/
 │       ├── 001-how-to-triage-agent.md
 │       ├── 002-case-study-repo-health.md
 │       └── 003-opinion-ai-sop-theater.md
 │
-└── assets/ (for visual files - logo, banners)
+├── tests/ 🧪 Complete test suite
+│   ├── README.md (testing overview)
+│   ├── setup.js (test configuration)
+│   ├── unit/ (unit tests for validators)
+│   │   ├── buzzwordDetector.test.js
+│   │   ├── emojiCounter.test.js
+│   │   ├── hashtagValidator.test.js
+│   │   ├── parseCarousel.test.js
+│   │   └── wordCountValidator.test.js
+│   ├── integration/ (integration tests)
+│   │   └── gammaAutomation.test.js
+│   ├── e2e/ (end-to-end tests)
+│   │   ├── README.md
+│   │   ├── gammaAutomation.e2e.test.js
+│   │   ├── fixtures/ (test data)
+│   │   └── helpers/ (test utilities)
+│   ├── fixtures/ (test fixtures)
+│   │   └── valid-carousel.md
+│   └── helpers/ (test utilities)
+│       ├── mockData.js
+│       └── testUtils.js
+│
+└── assets/ (visual files - logo, banners)
 ```
 
 ---
@@ -140,6 +226,7 @@ contentCreator/
 - [ ] Publish first 3 posts to LinkedIn
 - [ ] Create Gamma carousel from outline
 - [ ] Begin engagement tracking
+- [ ] **NEW:** Review n8n automation plan for LinkedIn publishing (see docs/automation/N8N_INTEGRATION_SUMMARY.md)
 
 ---
 
@@ -279,10 +366,16 @@ contentCreator/
 ## Additional Resources
 
 ### Internal References
-- **Source Document:** LINKEDINCONTEXT.md (Phases 1-8)
+- **Source Document:** docs/strategy/LINKEDINCONTEXT.md (Phases 1-8)
+- **Action Plan:** docs/strategy/ACTION_PLAN.md
+- **Leadership Strategy:** docs/strategy/CO-FOUNDER_STRATEGY.md
 - **Brand Guide:** brand-docs/BRAND_BRIEF.md
 - **Workflow:** brand-docs/PUBLISHING_WORKFLOW.md
 - **Checklist:** brand-docs/QUALITY_CHECKLIST.md
+- **Testing Docs:** docs/testing/ (comprehensive testing setup)
+- **Setup Guides:** docs/setup/ (automation and configuration)
+- **n8n Automation:** docs/automation/N8N_INTEGRATION_SUMMARY.md (executive summary)
+- **n8n Full Plan:** docs/automation/N8N_LINKEDIN_INTEGRATION_PLAN.md (detailed implementation)
 
 ### External Tools
 - **LinkedIn Publishing:** Native LinkedIn post editor

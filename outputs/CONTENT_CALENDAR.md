@@ -1,9 +1,10 @@
 # AI-Whisperers LinkedIn Content Calendar (30 Days)
 
 **Document Type:** Publishing Schedule & Topic Roadmap
-**Version:** 1.0
-**Date:** 2025-10-20
-**Status:** Draft
+**Version:** 2.0 - Multi-Author Strategy
+**Date:** 2025-10-21
+**Status:** Active - Three-Leader Phased Rollout
+**Note:** This calendar reflects Phase 1 (Months 1-2) with Kyrian as primary voice. See docs/strategy/CO-FOUNDER_STRATEGY.md for Phases 2-4 adding Ivan and Jonathan.
 
 ---
 

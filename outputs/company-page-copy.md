@@ -1,10 +1,10 @@
 # AI-Whisperers - LinkedIn Company Page Copy
 
 **Document Type:** Ready-to-Publish Profile Copy
-**Version:** 1.1
-**Date:** 2025-10-20
-**LinkedIn URL:** https://www.linkedin.com/company/109482114/
-**Status:** Pending Founder Approval
+**Version:** 1.3
+**Date:** 2025-10-21
+**LinkedIn URL:** https://www.linkedin.com/in/ai-whisperers-50676a382/
+**Status:** Updated with Ivan's philosophy + leadership team + correct company URL
 
 ---
 
@@ -21,28 +21,40 @@ Ship real automation with multi-agent workflows for ops and engineering.
 ## About Section (2000 characters max)
 
 ```
-AI-Whisperers designs multi-agent workflows that turn standard operating procedures into measurable automation — ticket triage, repo health monitoring, and service operations.
+"If you have to do it more than once, automate it."
 
-We help operations and engineering teams reduce handle times, improve code reliability, and free people for high-value work.
+That's the philosophy behind AI-Whisperers.
 
-With teams in LATAM (Paraguay) and the EU, our approach is practical and data-driven: scoped pilots, transparent guardrails, and clear KPIs from day one.
+We build practical multi-agent systems that replace repetitive work in operations and engineering teams.
+
+No hype. No magic. Just measurable outcomes.
 
 What we do:
-• Automation audits – Identify high-ROI use cases from existing SOPs
-• Agent design & rollout – Build, test, deploy multi-agent workflows
-• Playbooks & training – Document systems, train teams, enable handoff
-• Change enablement – Manage stakeholder buy-in and governance frameworks
+• Turn SOPs into autonomous agents
+• Automate ticket triage for support teams
+• Monitor repo health to reduce technical debt
+• Deploy multi-agent workflows that ship results in weeks, not quarters
 
-Recent pilot results:
-• 30% reduction in ticket handle time (AI triage agent)
-• 18% fewer hotfixes in 6 weeks (repo health monitoring)
+Recent results:
+• 30% reduction in ticket handle time (6-week pilot)
+• 18% fewer hotfixes with repo-health agent
 
-Our philosophy: Small, scoped AI agents replacing repetitive work. No hype, just practical results.
+Founded by brothers Ivan and Kyrian Weiss in Paraguay, led by CTO Jonathan Verdun.
 
-Let's start small: one use case, two weeks, measurable results.
+Our approach: Start small. Measure early. Scale smart.
+
+We help teams answer one question: "What manual process is eating up your time?"
+
+Then we automate it.
+
+Based in 🇵🇾 Paraguay | Serving LATAM + EU
+
+Small agents. Big impact.
+
+Follow for practical automation frameworks, case studies with real numbers, and honest lessons from building AI that works.
 ```
 
-**Character Count:** ~850/2000
+**Character Count:** ~985/2000
 
 **Tone Check:**
 - ✅ Pragmatic and results-focused
