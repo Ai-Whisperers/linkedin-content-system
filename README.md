@@ -1,17 +1,134 @@
-# AI-Whisperers LinkedIn Content System
+# AI-Whisperers Content Creator
 
-**Project:** LinkedIn Content Strategy & Implementation
-**Client:** AI-Whisperers (Kyrian Weiss, Founder)
-**Date:** 2025-10-20
-**Status:** Ready for Review & Execution
+**Purpose:** Main content generation engine for all AI-Whisperers marketing
+
+**Version:** 2.0 (Content Generation System)
+**Last Updated:** 2025-10-21
+**Status:** Ready for Context Collection
 
 ---
 
-## Project Overview
+## What This Repo Does
 
-This repository contains a complete LinkedIn content system for AI-Whisperers, designed to position the company as a pragmatic, results-driven multi-agent automation provider serving operations and DevOps teams across LATAM and EU.
+This repository transforms **comprehensive context** about AI-Whisperers into **100 structured LinkedIn posts** that you can filter and publish.
 
-**Goal:** Build professional LinkedIn presence with 30-day content pipeline, optimized profiles, and measurable engagement framework.
+### Input → Output Flow
+
+```
+[Your Context]              [100 Generated Posts]           [20-30 Approved Posts]
+    ↓                              ↓                                ↓
+Pages, Repos,             Structured posts in              Quality-filtered,
+Projects, Team    →       POST_TEMPLATE.md format   →      ready to publish
+Information                                                 on LinkedIn
+```
+
+---
+
+## Quick Start
+
+### 1. Add Context (2-3 hours)
+
+Create **minimum 10 context files** in `context/` directory:
+
+```bash
+context/pages/page-ai-whisperers-personal-style.md    # LinkedIn pages
+context/repos/repo-[your-repo-name].md                # GitHub repos
+context/projects/project-ticket-triage-agent.md       # Case studies
+context/team/team-kyrian-weiss.md                     # Team members
+```
+
+**Templates available in:** `context/README.md`
+
+**Track progress:** `context/CONTEXT_COLLECTION_CHECKLIST.md`
+
+---
+
+### 2. Generate 100 Posts (Instant)
+
+Once you have 10+ context files, trigger content generation:
+
+**Output:** 100 structured posts in `generated-posts/batch-001/`
+
+**Content Mix:**
+- 25 How-To Posts (practical guides)
+- 25 Case Study Posts (results + metrics)
+- 25 Opinion Posts (contrarian takes)
+- 15 Framework Posts (reusable models)
+- 10 Carousel Outlines (visual storytelling)
+
+---
+
+### 3. Filter & Approve (2-3 hours)
+
+Review and tag posts:
+- ✅ **APPROVED** - Ready to publish
+- ⚠️ **NEEDS_REVISION** - Good concept, needs edits
+- ❌ **REJECTED** - Doesn't meet standards
+
+**Use:** `brand-docs/QUALITY_CHECKLIST.md` for consistent evaluation
+
+**Expected:** 20-30 approved posts per batch (20-30% approval rate)
+
+---
+
+### 4. Publish (3-4 posts/week)
+
+Move approved posts to `approved-posts/YYYY-MM/` with scheduled dates.
+
+**Publishing Schedule:**
+- Monday: How-To / Educational
+- Wednesday: Case Study / Metrics
+- Friday: Carousel / Opinion
+- Bi-weekly: Company page (major content)
+
+**Result:** 20-30 approved posts = 6-8 weeks of content
+
+---
+
+## Directory Structure
+
+```
+contentCreator/
+│
+├── context/                    # INPUT: Add your context here
+│   ├── pages/                  # LinkedIn pages, bios, posts
+│   ├── repos/                  # GitHub repositories
+│   ├── projects/               # Case studies, pilots, metrics
+│   ├── team/                   # Team member profiles
+│   ├── README.md               # Context templates and guide
+│   └── CONTEXT_COLLECTION_CHECKLIST.md  # Track progress
+│
+├── generated-posts/            # OUTPUT: Generated content batches
+│   ├── batch-001/              # First 100 posts
+│   │   ├── 001-050/           # Posts 1-50
+│   │   ├── 051-100/           # Posts 51-100
+│   │   ├── BATCH_SUMMARY.md   # Overview
+│   │   └── FILTER_REPORT.md   # Quality results
+│   └── README.md               # Generation log
+│
+├── approved-posts/             # FILTERED: Ready to publish
+│   ├── 2025-10/                # October posts
+│   ├── 2025-11/                # November posts
+│   ├── PUBLISHING_CALENDAR.md  # Schedule
+│   └── PERFORMANCE_TRACKER.md  # Engagement metrics
+│
+├── brand-docs/                 # Brand standards and guidelines
+│   ├── BRAND_BRIEF.md          # Voice, tone, positioning
+│   ├── QUALITY_CHECKLIST.md    # Quality standards
+│   └── PUBLISHING_WORKFLOW.md  # Publishing process
+│
+├── docs/strategy/              # Strategy documents
+│   ├── FINAL_STRATEGY_SUMMARY.md
+│   ├── LEADERSHIP_STRATEGY_SUMMARY.md
+│   └── [other strategy docs]
+│
+├── drafts/                     # Legacy manual drafts
+│   ├── POST_TEMPLATE.md        # Template for all posts
+│   └── posts/                  # Manual draft posts
+│
+├── CONTENT_GENERATION_GUIDE.md # Complete system guide
+└── README.md                   # This file
+```
 
 ---
 
