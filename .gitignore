@@ -19,12 +19,6 @@ desktop.ini
 node_modules/
 package-lock.json
 
-# Automation outputs
-automation/screenshots/
-automation/carousel-data.json
-automation/*-data.json
-automation/browser-data/
-
 # Environment and secret files
 .env
 .env.*
@@ -43,21 +37,14 @@ tokens.json
 *_secret.txt
 *_credentials.txt
 
-# Gamma.app session data
-automation/session/
-automation/.auth/
-playwright/.auth/
-
-# LinkedIn API credentials (if added)
+# LinkedIn API credentials
 linkedin_auth.json
 linkedin_token.json
 
-# Build outputs (if applicable)
+# Build outputs
 dist/
 build/
 
-# Test outputs and coverage
-tests/coverage/
-tests/temp/
-*.test.log
-.jest-cache/
+# Generated content drafts (working files)
+generated-posts/*/drafts/
+approved-posts/*/drafts/

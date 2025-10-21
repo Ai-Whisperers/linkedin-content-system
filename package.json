@@ -1,39 +1,26 @@
 {
   "name": "contentcreator",
-  "version": "1.0.0",
-  "description": "**Project:** LinkedIn Content Strategy & Implementation **Client:** AI-Whisperers (Kyrian Weiss, Founder) **Date:** 2025-10-20 **Status:** Ready for Review & Execution",
+  "version": "2.0.0",
+  "description": "AI-Whisperers Content Generation System - Transform context into structured LinkedIn posts",
   "main": "index.js",
-  "scripts": {
-    "test": "jest",
-    "test:unit": "jest tests/unit",
-    "test:integration": "jest tests/integration",
-    "test:e2e": "HEADLESS=true jest --config=jest.e2e.config.js --runInBand",
-    "test:e2e:headed": "HEADLESS=false jest --config=jest.e2e.config.js --runInBand",
-    "test:e2e:debug": "HEADLESS=false SLOW_MO=1000 jest --config=jest.e2e.config.js --runInBand --verbose",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch",
-    "test:verbose": "jest --verbose",
-    "validate:post": "node automation/validators/runQualityChecks.js",
-    "carousel": "node automation/runCarousel.js",
-    "parse": "node automation/parseCarousel.js",
-    "gamma": "node automation/gammaAutomation.js"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ai-Whisperers/linkedin-content-system.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "linkedin",
+    "content-generation",
+    "ai-whisperers",
+    "marketing",
+    "social-media"
+  ],
+  "author": "AI-Whisperers",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Ai-Whisperers/linkedin-content-system/issues"
   },
   "homepage": "https://github.com/Ai-Whisperers/linkedin-content-system#readme",
-  "dependencies": {
-    "@playwright/test": "^1.56.1",
-    "playwright": "^1.56.1"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }
