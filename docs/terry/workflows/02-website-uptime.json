@@ -1,0 +1,219 @@
+{
+  "name": "Website Uptime Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "schedule-15min",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://ai-whisperers-portfolio-website.vercel.app/",
+        "options": {
+          "timeout": 10000,
+          "redirect": {
+            "followRedirects": true,
+            "maxRedirects": 3
+          },
+          "response": {
+            "fullResponse": true,
+            "neverError": true
+          }
+        }
+      },
+      "id": "http-request",
+      "name": "Check Website",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst responseTime = $node[\"Check Website\"].runExecutionTime;\nconst statusCode = response.statusCode;\n\nlet status = 'healthy';\nlet priority = 'low';\nlet message = 'Website operational';\nlet problems = [];\n\nif (statusCode >= 500) {\n  status = 'critical';\n  priority = 'critical';\n  message = 'Website is DOWN';\n  problems.push(`HTTP ${statusCode} error`);\n} else if (statusCode >= 400) {\n  status = 'error';\n  priority = 'high';\n  message = 'Website returning errors';\n  problems.push(`HTTP ${statusCode} error`);\n} else if (responseTime > 5000) {\n  status = 'warning';\n  priority = 'medium';\n  message = 'Website very slow';\n  problems.push(`Response time: ${responseTime}ms`);\n} else if (responseTime > 3000) {\n  status = 'warning';\n  priority = 'low';\n  message = 'Website slow';\n  problems.push(`Response time: ${responseTime}ms`);\n}\n\nreturn {\n  json: {\n    url: 'https://ai-whisperers-portfolio-website.vercel.app/',\n    status: status,\n    priority: priority,\n    status_code: statusCode,\n    response_time_ms: responseTime,\n    message: message,\n    problems: problems,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "analyze-response",
+      "name": "Analyze Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equals",
+              "value1": "={{$json.status}}",
+              "value2": "healthy",
+              "output": 0
+            },
+            {
+              "operation": "equals",
+              "value1": "={{$json.status}}",
+              "value2": "warning",
+              "output": 1
+            },
+            {
+              "operation": "equals",
+              "value1": "={{$json.priority}}",
+              "value2": "critical",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "switch-status",
+      "name": "Route by Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{$env.WHATSAPP_PHONE_NUMBER_ID}}/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "messaging_product",
+              "value": "whatsapp"
+            },
+            {
+              "name": "to",
+              "value": "={{$env.WHATSAPP_RECIPIENT}}"
+            },
+            {
+              "name": "type",
+              "value": "text"
+            },
+            {
+              "name": "text",
+              "value": "={\"body\": \"🚨 CRITICAL: Website is DOWN!\\n\\nStatus: HTTP {{$json.status_code}}\\nTime: {{$json.timestamp}}\\n\\nCheck immediately!\"}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "whatsapp-critical",
+      "name": "Critical Alert (WhatsApp)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 100],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3",
+          "name": "WhatsApp API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "send",
+        "fromEmail": "terry@ai-whisperers.com",
+        "toEmail": "alerts@ai-whisperers.com",
+        "subject": "=⚠️ Website Performance Warning",
+        "emailFormat": "text",
+        "message": "=Website response time: {{$json.response_time_ms}}ms\\n\\nProblems:\\n{{$json.problems.join('\\n')}}",
+        "options": {}
+      },
+      "id": "email-warning",
+      "name": "Warning Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "Terry Email"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Check Website",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Website": {
+      "main": [
+        [
+          {
+            "node": "Analyze Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Response": {
+      "main": [
+        [
+          {
+            "node": "Route by Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Status": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Warning Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Critical Alert (WhatsApp)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1",
+  "id": "2",
+  "meta": {
+    "instanceId": "terry-01"
+  },
+  "tags": [
+    {
+      "name": "monitoring"
+    },
+    {
+      "name": "website"
+    }
+  ]
+}
+

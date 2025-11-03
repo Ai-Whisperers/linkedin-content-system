@@ -49,17 +49,21 @@ AI-Whisperers designs "agentized" workflows that turn standard operating procedu
 
 ---
 
-## Proof Points (Validated Metrics)
+## Proof Points (Real Achievements)
 
-| Metric | Context | Use Case |
-|--------|---------|----------|
-| **-30% ticket handle time** | Client pilot | AI triage agent (support automation) |
-| **18% fewer hotfixes** | 6-week deployment | Repo health monitoring agent |
+| Achievement | Context | Use Case |
+|------------|---------|----------|
+| **20 documented agentic patterns** | Public GitHub library | Multi-agent architecture reference (Prompt Chaining, Routing, Parallelization, etc.) |
+| **2 client case studies** | Completed projects | WPG Amenities & WPG Software testimonials |
+| **NASA Space Apps Challenge winner** | Team achievement | Ivan Weiss - technical excellence and innovation |
+| **3-month startup journey** | Building-in-public | Paraguay-based, founder-led development since July 2025 |
+| **Multiple GitHub repositories** | Open-source contributions | Agentic schemas, work hours automation, company information |
 
 **Usage Guidelines:**
-- Always cite these exact numbers when referencing success
-- Label any other metrics as "pilot data" or "anecdotal" unless validated
-- Never round or exaggerate (e.g., don't say "nearly 1/3 reduction" - say "30%")
+- These are real, verifiable achievements - use with confidence
+- For client metrics, only cite what clients explicitly approve in testimonials
+- Building-in-public narrative is our strength (honesty > inflated numbers)
+- Label anything aspirational as "target" or "goal" - never as achieved
 
 ---
 
@@ -76,7 +80,7 @@ AI-Whisperers designs "agentized" workflows that turn standard operating procedu
 
 **Our Solution:** Ticket triage automation, SOP-to-agent transformation
 
-**Message:** "Cut handle time by 30% with AI triage lanes that free your team for high-value work."
+**Message:** "Free your team for high-value work with AI triage lanes that route and prioritize support requests automatically."
 
 ---
 
@@ -89,7 +93,7 @@ AI-Whisperers designs "agentized" workflows that turn standard operating procedu
 
 **Our Solution:** Repo health monitoring, automated technical debt tracking
 
-**Message:** "18% fewer hotfixes in 6 weeks with a repo-health agent that spots issues before they ship."
+**Message:** "Spot issues before they ship with repo-health agents that track technical debt and code quality automatically."
 
 ---
 
@@ -139,9 +143,9 @@ AI-Whisperers designs "agentized" workflows that turn standard operating procedu
 
 ### Don'ts
 - **Avoid buzzwords:** "AI magic," "revolutionary," "disruptive," "game-changing"
-- **Don't exaggerate:** "Completely eliminated" → "Reduced by X%"
+- **Don't exaggerate:** "Completely eliminated" → "Reduced by X%" (with real data)
 - **Don't oversimplify:** "AI does it all" → "AI triages, humans decide"
-- **Don't be vague:** "Improved efficiency" → "Cut handle time by 30%"
+- **Don't be vague:** "Improved efficiency" → "Automated 80% of triage routing" (with specifics)
 
 ### Bilingual Approach
 - **Primary language:** English (for maximum reach)
@@ -221,14 +225,14 @@ AI-Whisperers designs "agentized" workflows that turn standard operating procedu
 ## Voice Examples
 
 ### Founder Voice (First Person, Reflective)
-> "I help teams build automation that actually works — not demos, but reliable tools that stick. My approach: start small, measure early, document everything. Recently, I helped a client cut 30% of ticket handle time with an AI triage lane and reduced hotfixes by 18% using a repo-health agent."
+> "I help teams build automation that actually works — not demos, but reliable tools that stick. My approach: start small, measure early, document everything. I've built multi-agent systems for ticket triage and repo health monitoring, documented 20 agentic design patterns, and learned that transparency beats hype every time."
 
 **Characteristics:** Humble confidence, specific examples, builder identity
 
 ---
 
 ### Company Voice (Professional, Pragmatic)
-> "AI-Whisperers designs multi-agent workflows that turn standard operating procedures into measurable automation — ticket triage, repo health, and service ops. We help teams reduce handle times, improve code reliability, and free people for high-value work."
+> "AI-Whisperers designs multi-agent workflows that turn standard operating procedures into practical automation — ticket triage, repo health, and service ops. We help teams automate repetitive work, improve code reliability, and free people for high-value decisions. Built in Paraguay, serving LATAM and EU."
 
 **Characteristics:** Clear value prop, specific use cases, outcomes-focused
 
@@ -245,7 +249,7 @@ AI-Whisperers designs "agentized" workflows that turn standard operating procedu
 
 ### Content Types
 - **How-To Posts:** Step-by-step guides (e.g., "Build a triage agent in 20 minutes")
-- **Case Studies:** Real pilot results with metrics (e.g., "30% handle time reduction")
+- **Case Studies:** Real project examples with client testimonials (e.g., WPG case studies)
 - **Opinion Pieces:** Contrarian takes (e.g., "AI strategy without SOPs is theater")
 - **Frameworks:** Reusable models (e.g., "Manual → YOLO trust levels")
 - **Carousels (Gamma):** Visual storytelling (e.g., 7-slide triage guide)
@@ -298,7 +302,8 @@ AI-Whisperers designs "agentized" workflows that turn standard operating procedu
 
 **Red flags:**
 - Words like "revolutionary," "game-changing," "AI magic"
-- Vague claims ("dramatically improved" vs. "reduced by 30%")
+- Vague claims ("dramatically improved" vs. "automated 15 of 20 triage steps")
+- Unverifiable metrics (use real achievements from context files)
 - No clear CTA or takeaway
 - More than 2 emojis or overly casual tone
 - Missing proof points or examples
