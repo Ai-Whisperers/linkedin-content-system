@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: terry-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-true}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-aiwhisperers}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - DB_TYPE=${DB_TYPE:-sqlite}
+      - EXECUTIONS_MODE=regular
+      - EXECUTIONS_TIMEOUT=300
+      - EXECUTIONS_TIMEOUT_MAX=3600
+      - GENERIC_TIMEZONE=America/Asuncion
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_PERSONALIZATION_ENABLED=true
+      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+      - N8N_TEMPLATES_ENABLED=true
+      - N8N_LOG_LEVEL=info
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./workflows:/workflows:ro
+      - ./scripts:/scripts:ro
+    networks:
+      - terry-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --q http://localhost:5678/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    labels:
+      - "com.ai-whisperers.service=terry"
+      - "com.ai-whisperers.component=n8n"
+      - "com.ai-whisperers.version=1.0.0"
+
+volumes:
+  n8n_data:
+    driver: local
+    labels:
+      - "com.ai-whisperers.service=terry"
+      - "com.ai-whisperers.backup=true"
+
+networks:
+  terry-network:
+    driver: bridge
+    labels:
+      - "com.ai-whisperers.service=terry"

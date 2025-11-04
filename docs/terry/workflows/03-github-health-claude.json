@@ -1,0 +1,371 @@
+{
+  "name": "GitHub Health Check with Claude AI",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "repos-list",
+              "name": "repositories",
+              "value": "=[\"work-hours-automated-reports\", \"Company-Information\", \"agentic-schemas\", \"ai-whisperers-portfolio-website\", \"WPG-Amenities\", \"contentCreator\"]",
+              "type": "array"
+            },
+            {
+              "id": "org-name",
+              "name": "org",
+              "value": "Ai-Whisperers",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-repos",
+      "name": "Set Repository List",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "loop-repos",
+      "name": "Loop Over Repositories",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/{{ $('Set Repository List').item.json.org }}/{{ $('Set Repository List').item.json.repositories[$itemIndex] }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "github-api-repo",
+      "name": "Get Repository Info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 400],
+      "credentials": {
+        "githubApi": {
+          "id": "github_cred",
+          "name": "AI-Whisperers GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/{{ $('Set Repository List').item.json.org }}/{{ $('Set Repository List').item.json.repositories[$itemIndex] }}/commits",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "per_page",
+                "value": "5"
+              }
+            ]
+          }
+        }
+      },
+      "id": "github-recent-commits",
+      "name": "Get Recent Commits",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1050, 400],
+      "credentials": {
+        "githubApi": {
+          "id": "github_cred",
+          "name": "AI-Whisperers GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Analyze repository health and prepare data for Claude\nconst repoData = $input.item(0).json;\nconst commitsData = $input.item(1).json;\n\nconst now = new Date();\nconst repoName = repoData.name;\n\nlet healthScore = 100;\nlet problems = [];\nlet warnings = [];\n\n// Check last update\nconst lastUpdate = new Date(repoData.updated_at);\nconst daysSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60 * 24);\n\nif (daysSinceUpdate > 60) {\n  healthScore -= 30;\n  problems.push(`No updates in ${Math.floor(daysSinceUpdate)} days - repository may be stale`);\n} else if (daysSinceUpdate > 30) {\n  healthScore -= 15;\n  warnings.push(`No updates in ${Math.floor(daysSinceUpdate)} days - consider checking status`);\n}\n\n// Check open issues\nif (repoData.open_issues_count > 20) {\n  healthScore -= 25;\n  problems.push(`High open issues: ${repoData.open_issues_count} - may indicate maintenance burden`);\n} else if (repoData.open_issues_count > 10) {\n  healthScore -= 10;\n  warnings.push(`Moderate open issues: ${repoData.open_issues_count}`);\n}\n\n// Check if repo has description\nif (!repoData.description || repoData.description.length < 10) {\n  healthScore -= 5;\n  warnings.push('Missing or minimal repository description');\n}\n\n// Check if repo has README\nif (!repoData.has_wiki && !repoData.has_pages) {\n  healthScore -= 5;\n  warnings.push('No wiki or GitHub pages - documentation may be limited');\n}\n\n// Analyze commit activity\nlet commitInfo = 'No recent commits available';\nif (commitsData && commitsData.length > 0) {\n  const recentCommits = commitsData.slice(0, 5);\n  commitInfo = `Last ${recentCommits.length} commits:\\n`;\n  recentCommits.forEach((commit, idx) => {\n    const commitDate = new Date(commit.commit.author.date);\n    const daysAgo = Math.floor((now - commitDate) / (1000 * 60 * 60 * 24));\n    commitInfo += `  ${idx + 1}. \"${commit.commit.message.split('\\n')[0].substring(0, 60)}\" (${daysAgo} days ago)\\n`;\n  });\n} else {\n  healthScore -= 10;\n  problems.push('No recent commit history available');\n}\n\n// Determine status\nlet status = 'healthy';\nlet priority = 'low';\n\nif (healthScore < 50) {\n  status = 'critical';\n  priority = 'high';\n} else if (healthScore < 75) {\n  status = 'warning';\n  priority = 'medium';\n}\n\n// Prepare context for Claude\nconst claudeContext = `Repository Health Analysis Request:\n\nRepository: ${repoName}\nOrganization: Ai-Whisperers\nHealth Score: ${healthScore}/100\nStatus: ${status}\nPriority: ${priority}\n\nRepository Stats:\n- Stars: ${repoData.stargazers_count}\n- Forks: ${repoData.forks_count}\n- Open Issues: ${repoData.open_issues_count}\n- Size: ${repoData.size} KB\n- Default Branch: ${repoData.default_branch}\n- Last Updated: ${Math.floor(daysSinceUpdate)} days ago\n- Language: ${repoData.language || 'Not specified'}\n- Private: ${repoData.private ? 'Yes' : 'No'}\n\nProblems Identified:\n${problems.length > 0 ? problems.map((p, i) => `${i + 1}. ${p}`).join('\\n') : 'None'}\n\nWarnings:\n${warnings.length > 0 ? warnings.map((w, i) => `${i + 1}. ${w}`).join('\\n') : 'None'}\n\nRecent Activity:\n${commitInfo}\n\nDescription: ${repoData.description || 'No description provided'}`;\n\nreturn {\n  json: {\n    repository: repoName,\n    health_score: healthScore,\n    status: status,\n    priority: priority,\n    problems: problems,\n    warnings: warnings,\n    stats: {\n      stars: repoData.stargazers_count,\n      forks: repoData.forks_count,\n      open_issues: repoData.open_issues_count,\n      size_kb: repoData.size,\n      language: repoData.language,\n      days_since_update: Math.floor(daysSinceUpdate)\n    },\n    claude_context: claudeContext,\n    repo_url: repoData.html_url,\n    timestamp: now.toISOString()\n  }\n};"
+      },
+      "id": "analyze-health",
+      "name": "Analyze Repository Health",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "status-check",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "healthy",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-needs-analysis",
+      "name": "IF Needs Analysis",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1450, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-3-5-sonnet-20241022\",\n  \"max_tokens\": 2048,\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"You are Terry, an AI IT agent monitoring infrastructure for AI-Whisperers. Analyze this repository health report and provide:\\n\\n1. Root Cause Analysis: What's causing the issues?\\n2. Impact Assessment: How critical is this?\\n3. Recommended Actions: Specific steps to fix (prioritized)\\n4. Prevention: How to avoid this in the future?\\n\\nBe concise, practical, and specific. Format as clear sections.\\n\\n---\\n\\n{{ $json.claude_context }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "claude-analysis",
+      "name": "Claude AI Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1650, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "claude_cred",
+          "name": "Claude API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract Claude's analysis and format for email\nconst inputData = $input.first().json;\nconst claudeResponse = inputData.content[0].text;\n\nreturn {\n  json: {\n    repository: $('Analyze Repository Health').first().json.repository,\n    health_score: $('Analyze Repository Health').first().json.health_score,\n    status: $('Analyze Repository Health').first().json.status,\n    priority: $('Analyze Repository Health').first().json.priority,\n    problems: $('Analyze Repository Health').first().json.problems,\n    warnings: $('Analyze Repository Health').first().json.warnings,\n    stats: $('Analyze Repository Health').first().json.stats,\n    repo_url: $('Analyze Repository Health').first().json.repo_url,\n    claude_analysis: claudeResponse,\n    timestamp: $('Analyze Repository Health').first().json.timestamp\n  }\n};"
+      },
+      "id": "format-claude-response",
+      "name": "Format Claude Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1850, 300]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "terry@ai-whisperers.com",
+        "toEmail": "alerts@ai-whisperers.com",
+        "subject": "=🤖 Terry AI Alert: {{ $json.repository }} ({{ $json.status.toUpperCase() }})",
+        "emailFormat": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }\n  .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }\n  .header h1 { margin: 0; font-size: 24px; }\n  .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-top: 10px; }\n  .status-critical { background-color: #ff4444; color: white; }\n  .status-warning { background-color: #ffaa00; color: white; }\n  .content { background: white; padding: 20px; border: 1px solid #ddd; }\n  .metric { background: #f8f9fa; padding: 15px; margin: 10px 0; border-left: 4px solid #667eea; border-radius: 4px; }\n  .metric h3 { margin: 0 0 10px 0; color: #667eea; font-size: 16px; }\n  .problems { background: #fff3cd; border-left: 4px solid #ff4444; padding: 15px; margin: 10px 0; border-radius: 4px; }\n  .problems ul { margin: 10px 0; padding-left: 20px; }\n  .claude-analysis { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 15px 0; border-radius: 4px; }\n  .claude-analysis h3 { color: #2e7d32; margin-top: 0; }\n  .stats { display: flex; justify-content: space-between; flex-wrap: wrap; margin: 15px 0; }\n  .stat-box { flex: 0 0 48%; background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px; text-align: center; }\n  .stat-box .number { font-size: 24px; font-weight: bold; color: #667eea; }\n  .stat-box .label { font-size: 12px; color: #666; text-transform: uppercase; }\n  .footer { background: #f8f9fa; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px; color: #666; }\n  .button { display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 10px 5px; }\n  pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <div class=\"header\">\n    <h1>🤖 Terry AI Health Report</h1>\n    <p style=\"margin: 5px 0 0 0;\">Repository: <strong>{{ $json.repository }}</strong></p>\n    <span class=\"status-badge status-{{ $json.status }}\">{{ $json.status.toUpperCase() }}</span>\n  </div>\n  \n  <div class=\"content\">\n    <div class=\"metric\">\n      <h3>📊 Health Score</h3>\n      <p style=\"font-size: 32px; font-weight: bold; margin: 0; color: {{ $json.health_score < 50 ? '#ff4444' : ($json.health_score < 75 ? '#ffaa00' : '#4caf50') }};\">{{ $json.health_score }}/100</p>\n    </div>\n\n    <div class=\"stats\">\n      <div class=\"stat-box\">\n        <div class=\"number\">{{ $json.stats.stars }}</div>\n        <div class=\"label\">⭐ Stars</div>\n      </div>\n      <div class=\"stat-box\">\n        <div class=\"number\">{{ $json.stats.open_issues }}</div>\n        <div class=\"label\">🐛 Open Issues</div>\n      </div>\n      <div class=\"stat-box\">\n        <div class=\"number\">{{ $json.stats.forks }}</div>\n        <div class=\"label\">🔱 Forks</div>\n      </div>\n      <div class=\"stat-box\">\n        <div class=\"number\">{{ $json.stats.days_since_update }}</div>\n        <div class=\"label\">📅 Days Since Update</div>\n      </div>\n    </div>\n\n    {{ $json.problems.length > 0 ? '<div class=\"problems\"><h3>⚠️ Problems Detected</h3><ul>' + $json.problems.map(p => '<li>' + p + '</li>').join('') + '</ul></div>' : '' }}\n\n    {{ $json.warnings.length > 0 ? '<div class=\"metric\"><h3>⚡ Warnings</h3><ul>' + $json.warnings.map(w => '<li>' + w + '</li>').join('') + '</ul></div>' : '' }}\n\n    <div class=\"claude-analysis\">\n      <h3>🧠 Claude AI Analysis</h3>\n      <pre>{{ $json.claude_analysis }}</pre>\n    </div>\n\n    <div style=\"text-align: center; margin: 20px 0;\">\n      <a href=\"{{ $json.repo_url }}\" class=\"button\">📂 View Repository on GitHub</a>\n      <a href=\"{{ $json.repo_url }}/issues\" class=\"button\">🐛 View Issues</a>\n    </div>\n\n    <p style=\"font-size: 12px; color: #666; margin-top: 20px;\">\n      <strong>Detected:</strong> {{ $json.timestamp }}<br>\n      <strong>Priority:</strong> {{ $json.priority.toUpperCase() }}<br>\n      <strong>Language:</strong> {{ $json.stats.language || 'Not specified' }}\n    </p>\n  </div>\n  \n  <div class=\"footer\">\n    <p>🤖 Generated by Terry - AI IT Agent for AI-Whisperers</p>\n    <p>Powered by Claude 3.5 Sonnet | n8n Workflow Automation</p>\n    <p style=\"margin-top: 10px; font-size: 11px;\">\"If you have to do it more than once, automate it.\"</p>\n  </div>\n</div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-alert-email",
+      "name": "Send Alert Email with AI Analysis",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2050, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp_cred",
+          "name": "Terry Email"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "terry@ai-whisperers.com",
+        "toEmail": "alerts@ai-whisperers.com",
+        "subject": "=✅ Terry: {{ $json.repository }} is Healthy",
+        "emailFormat": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n  .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa; }\n  .header { background: #4caf50; color: white; padding: 15px; border-radius: 8px 8px 0 0; }\n  .content { background: white; padding: 20px; border: 1px solid #ddd; }\n  .footer { background: #f8f9fa; padding: 10px; text-align: center; font-size: 12px; color: #666; }\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <div class=\"header\">\n    <h2>✅ Repository Healthy</h2>\n  </div>\n  <div class=\"content\">\n    <h3>{{ $json.repository }}</h3>\n    <p><strong>Health Score:</strong> {{ $json.health_score }}/100</p>\n    <p><strong>Status:</strong> All systems operational</p>\n    <p><strong>Stats:</strong></p>\n    <ul>\n      <li>Stars: {{ $json.stats.stars }}</li>\n      <li>Open Issues: {{ $json.stats.open_issues }}</li>\n      <li>Days Since Update: {{ $json.stats.days_since_update }}</li>\n    </ul>\n    <p><a href=\"{{ $json.repo_url }}\">View Repository</a></p>\n  </div>\n  <div class=\"footer\">\n    <p>🤖 Terry AI Agent | AI-Whisperers</p>\n  </div>\n</div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-healthy-email",
+      "name": "Send Healthy Status Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1650, 500],
+      "credentials": {
+        "smtp": {
+          "id": "smtp_cred",
+          "name": "Terry Email"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [
+        [
+          {
+            "node": "Set Repository List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Repository List": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Repositories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Repositories": {
+      "main": [
+        [
+          {
+            "node": "Get Repository Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Repository Info": {
+      "main": [
+        [
+          {
+            "node": "Get Recent Commits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent Commits": {
+      "main": [
+        [
+          {
+            "node": "Analyze Repository Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Repository Health": {
+      "main": [
+        [
+          {
+            "node": "IF Needs Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Needs Analysis": {
+      "main": [
+        [
+          {
+            "node": "Claude AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Healthy Status Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude AI Analysis": {
+      "main": [
+        [
+          {
+            "node": "Format Claude Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Claude Response": {
+      "main": [
+        [
+          {
+            "node": "Send Alert Email with AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "id": "github-health-claude",
+  "meta": {
+    "instanceId": "terry-claude-01"
+  },
+  "tags": [
+    {
+      "name": "monitoring"
+    },
+    {
+      "name": "github"
+    },
+    {
+      "name": "claude"
+    },
+    {
+      "name": "ai-analysis"
+    }
+  ]
+}
