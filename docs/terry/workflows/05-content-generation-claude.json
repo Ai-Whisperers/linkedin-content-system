@@ -1,0 +1,429 @@
+{
+  "name": "AI-Whisperers Content Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every 2 Weeks",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 400]
+    },
+    {
+      "parameters": {
+        "command": "find ./context -type f -name '*.md' ! -name 'README.md' ! -path '*/node_modules/*'",
+        "options": {}
+      },
+      "id": "find-context-files",
+      "name": "Find Context Files",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse file paths and read content\nconst output = $input.first().json.stdout;\nconst filePaths = output.split('\\n').filter(path => path.trim());\n\nconst contextFiles = [];\n\nfor (const filePath of filePaths) {\n  if (filePath.includes('context/')) {\n    const category = filePath.split('/')[1];\n    const fileName = filePath.split('/').pop().replace('.md', '');\n    \n    contextFiles.push({\n      path: filePath,\n      category: category,\n      name: fileName,\n      type: fileName.includes('repo') ? 'repository' : \n            fileName.includes('team') ? 'team' :\n            fileName.includes('project') ? 'project' : \n            fileName.includes('page') ? 'linkedin' : 'other'\n    });\n  }\n}\n\nreturn contextFiles.map(file => ({ json: file }));"
+      },
+      "id": "parse-file-paths",
+      "name": "Parse File Paths",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "command": "=cat {{$json.path}}",
+        "options": {}
+      },
+      "id": "read-file-content",
+      "name": "Read File Content",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine file metadata with content\nconst fileData = $input.first().json;\nconst content = fileData.stdout || '';\n\n// Extract key information\nconst lines = content.split('\\n');\nlet summary = '';\nlet metrics = [];\nlet technologies = [];\n\n// Parse content for key details\nfor (let i = 0; i < Math.min(lines.length, 50); i++) {\n  const line = lines[i].toLowerCase();\n  \n  // Extract metrics (numbers with %)\n  const metricMatch = line.match(/(\\d+)%/);\n  if (metricMatch) {\n    metrics.push(line.trim());\n  }\n  \n  // Extract technologies\n  if (line.includes('tech') || line.includes('stack') || line.includes('built')) {\n    technologies.push(lines[i].trim());\n  }\n}\n\n// Get first meaningful paragraph as summary\nconst paragraphs = content.split('\\n\\n').filter(p => p.length > 50);\nsummary = paragraphs[0] || content.substring(0, 500);\n\nreturn {\n  json: {\n    file_name: $('Parse File Paths').item.json.name,\n    file_path: $('Parse File Paths').item.json.path,\n    category: $('Parse File Paths').item.json.category,\n    type: $('Parse File Paths').item.json.type,\n    content: content,\n    summary: summary,\n    metrics: metrics,\n    technologies: technologies,\n    word_count: content.split(/\\s+/).length,\n    char_count: content.length\n  }\n};"
+      },
+      "id": "process-content",
+      "name": "Process Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "batch-for-generation",
+      "name": "Batch Files for Generation",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-3-5-sonnet-20241022\",\n  \"max_tokens\": 4096,\n  \"temperature\": 0.7,\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"You are a LinkedIn content strategist for AI-Whisperers, a company that builds practical AI systems focused on automation and multi-agent frameworks.\\n\\n# BRAND VOICE\\n- Professional yet approachable\\n- Evidence-based (metrics over hype)\\n- Builder-focused ('We built...' not 'AI can...')\\n- Pragmatic (no buzzwords like 'revolutionary', 'game-changing')\\n\\n# CONTENT RULES\\n- Word count: 120-180 words\\n- Maximum 2 emojis\\n- 4 hashtags (2 broad + 2 niche)\\n- Lead with results or strong hook\\n- Include specific metrics when available\\n\\n# YOUR TASK\\nGenerate 5 different LinkedIn post variations from this context:\\n\\n---\\nFILE: {{ $json.file_name }}\\nCATEGORY: {{ $json.category }}\\nTYPE: {{ $json.type }}\\n\\nCONTENT:\\n{{ $json.summary }}\\n\\nMETRICS FOUND: {{ $json.metrics.join(', ') || 'None' }}\\n---\\n\\n# OUTPUT FORMAT (Return as valid JSON)\\n\\n{\\n  \\\"posts\\\": [\\n    {\\n      \\\"variation\\\": \\\"how-to\\\",\\n      \\\"hook\\\": \\\"First sentence here\\\",\\n      \\\"body\\\": \\\"Main content here\\\",\\n      \\\"cta\\\": \\\"Call to action here\\\",\\n      \\\"hashtags\\\": [\\\"tag1\\\", \\\"tag2\\\", \\\"tag3\\\", \\\"tag4\\\"],\\n      \\\"word_count\\\": 150\\n    },\\n    {\\n      \\\"variation\\\": \\\"case-study\\\",\\n      \\\"hook\\\": \\\"First sentence here\\\",\\n      \\\"body\\\": \\\"Main content here\\\",\\n      \\\"cta\\\": \\\"Call to action here\\\",\\n      \\\"hashtags\\\": [\\\"tag1\\\", \\\"tag2\\\", \\\"tag3\\\", \\\"tag4\\\"],\\n      \\\"word_count\\\": 160\\n    },\\n    {\\n      \\\"variation\\\": \\\"opinion\\\",\\n      \\\"hook\\\": \\\"First sentence here\\\",\\n      \\\"body\\\": \\\"Main content here\\\",\\n      \\\"cta\\\": \\\"Call to action here\\\",\\n      \\\"hashtags\\\": [\\\"tag1\\\", \\\"tag2\\\", \\\"tag3\\\", \\\"tag4\\\"],\\n      \\\"word_count\\\": 145\\n    },\\n    {\\n      \\\"variation\\\": \\\"framework\\\",\\n      \\\"hook\\\": \\\"First sentence here\\\",\\n      \\\"body\\\": \\\"Main content here\\\",\\n      \\\"cta\\\": \\\"Call to action here\\\",\\n      \\\"hashtags\\\": [\\\"tag1\\\", \\\"tag2\\\", \\\"tag3\\\", \\\"tag4\\\"],\\n      \\\"word_count\\\": 155\\n    },\\n    {\\n      \\\"variation\\\": \\\"metric-driven\\\",\\n      \\\"hook\\\": \\\"First sentence here\\\",\\n      \\\"body\\\": \\\"Main content here\\\",\\n      \\\"cta\\\": \\\"Call to action here\\\",\\n      \\\"hashtags\\\": [\\\"tag1\\\", \\\"tag2\\\", \\\"tag3\\\", \\\"tag4\\\"],\\n      \\\"word_count\\\": 140\\n    }\\n  ],\\n  \\\"source_file\\\": \\\"{{ $json.file_name }}\\\",\\n  \\\"generated_at\\\": \\\"{{ $now.toISOString() }}\\\"\\n}\\n\\nReturn ONLY valid JSON, no markdown formatting.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "claude-generate",
+      "name": "Claude: Generate Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1450, 400],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "claude_cred",
+          "name": "Claude API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Claude's response and extract posts\nconst claudeResponse = $input.first().json;\nconst responseText = claudeResponse.content[0].text;\n\n// Extract JSON from response (handle both raw JSON and markdown-wrapped JSON)\nlet postsData;\ntry {\n  // Try parsing as-is\n  postsData = JSON.parse(responseText);\n} catch (e) {\n  // Try extracting from markdown code block\n  const jsonMatch = responseText.match(/```json\\n([\\s\\S]*?)\\n```/) || \n                    responseText.match(/```\\n([\\s\\S]*?)\\n```/);\n  if (jsonMatch) {\n    postsData = JSON.parse(jsonMatch[1]);\n  } else {\n    throw new Error('Could not parse Claude response as JSON');\n  }\n}\n\nconst sourceFile = $('Process Content').item.json.file_name;\nconst sourceCategory = $('Process Content').item.json.category;\nconst sourceType = $('Process Content').item.json.type;\n\n// Create individual items for each post variation\nconst posts = postsData.posts.map((post, index) => {\n  // Validate quality\n  const issues = [];\n  \n  if (post.word_count < 120 || post.word_count > 180) {\n    issues.push('Word count outside 120-180 range');\n  }\n  \n  if (post.hashtags.length !== 4) {\n    issues.push('Must have exactly 4 hashtags');\n  }\n  \n  // Check for buzzwords\n  const fullText = `${post.hook} ${post.body} ${post.cta}`.toLowerCase();\n  const buzzwords = ['revolutionary', 'game-changing', 'disruptive', 'magical', 'transform your'];\n  const foundBuzzwords = buzzwords.filter(word => fullText.includes(word));\n  \n  if (foundBuzzwords.length > 0) {\n    issues.push(`Contains buzzwords: ${foundBuzzwords.join(', ')}`);\n  }\n  \n  // Check emoji count\n  const emojiRegex = /\\p{Emoji}/gu;\n  const emojiCount = (fullText.match(emojiRegex) || []).length;\n  if (emojiCount > 2) {\n    issues.push(`Too many emojis: ${emojiCount} (max 2)`);\n  }\n  \n  // Determine quality score\n  let qualityScore = 100;\n  qualityScore -= issues.length * 10;\n  if (post.word_count >= 140 && post.word_count <= 160) qualityScore += 5;\n  if (!foundBuzzwords.length) qualityScore += 10;\n  \n  let status = 'APPROVED';\n  if (qualityScore < 70) status = 'NEEDS_REVISION';\n  if (qualityScore < 50) status = 'REJECTED';\n  \n  return {\n    json: {\n      post_id: `${sourceFile.replace('/', '-')}-${post.variation}-${Date.now()}-${index}`,\n      source_file: sourceFile,\n      source_category: sourceCategory,\n      source_type: sourceType,\n      variation: post.variation,\n      hook: post.hook,\n      body: post.body,\n      cta: post.cta,\n      hashtags: post.hashtags,\n      full_text: `${post.hook}\\n\\n${post.body}\\n\\n${post.cta}\\n\\n${post.hashtags.map(tag => '#' + tag).join(' ')}`,\n      word_count: post.word_count,\n      quality_score: qualityScore,\n      status: status,\n      issues: issues,\n      generated_at: new Date().toISOString()\n    }\n  };\n});\n\nreturn posts;"
+      },
+      "id": "parse-validate",
+      "name": "Parse & Validate Posts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1650, 400]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equals",
+              "value1": "={{$json.status}}",
+              "value2": "APPROVED",
+              "output": 0
+            },
+            {
+              "operation": "equals",
+              "value1": "={{$json.status}}",
+              "value2": "NEEDS_REVISION",
+              "output": 1
+            },
+            {
+              "operation": "equals",
+              "value1": "={{$json.status}}",
+              "value2": "REJECTED",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "route-by-status",
+      "name": "Route by Quality",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1850, 400]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=./generated-posts/batch-{{ $now.format('YYYYMMDD') }}/approved/{{ $json.post_id }}.md",
+        "data": "=---\npost_id: {{ $json.post_id }}\nsource_file: {{ $json.source_file }}\nvariation: {{ $json.variation }}\nstatus: {{ $json.status }}\nquality_score: {{ $json.quality_score }}\nword_count: {{ $json.word_count }}\ngenerated_at: {{ $json.generated_at }}\n---\n\n# LinkedIn Post - {{ $json.variation }}\n\n## Hook\n{{ $json.hook }}\n\n## Body\n{{ $json.body }}\n\n## CTA\n{{ $json.cta }}\n\n## Hashtags\n{{ $json.hashtags.map(tag => '#' + tag).join(' ') }}\n\n---\n\n## Full Post (Copy-Paste Ready)\n\n{{ $json.full_text }}\n\n---\n\n## Metadata\n- Source: {{ $json.source_file }}\n- Category: {{ $json.source_category }}\n- Type: {{ $json.source_type }}\n- Quality Score: {{ $json.quality_score }}/100\n- Status: ✅ APPROVED\n",
+        "options": {}
+      },
+      "id": "write-approved",
+      "name": "Save Approved Posts",
+      "type": "n8n-nodes-base.writeFile",
+      "typeVersion": 1,
+      "position": [2050, 300]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=./generated-posts/batch-{{ $now.format('YYYYMMDD') }}/needs-revision/{{ $json.post_id }}.md",
+        "data": "=---\npost_id: {{ $json.post_id }}\nsource_file: {{ $json.source_file }}\nvariation: {{ $json.variation }}\nstatus: {{ $json.status }}\nquality_score: {{ $json.quality_score }}\nword_count: {{ $json.word_count }}\ngenerated_at: {{ $json.generated_at }}\n---\n\n# LinkedIn Post - {{ $json.variation }}\n\n⚠️ **NEEDS REVISION**\n\n## Issues Found\n{{ $json.issues.map((issue, i) => `${i+1}. ${issue}`).join('\\n') }}\n\n## Hook\n{{ $json.hook }}\n\n## Body\n{{ $json.body }}\n\n## CTA\n{{ $json.cta }}\n\n## Hashtags\n{{ $json.hashtags.map(tag => '#' + tag).join(' ') }}\n\n---\n\n## Full Post\n\n{{ $json.full_text }}\n\n---\n\n## Metadata\n- Quality Score: {{ $json.quality_score }}/100\n- Status: ⚠️ NEEDS REVISION\n",
+        "options": {}
+      },
+      "id": "write-revision",
+      "name": "Save Needs Revision",
+      "type": "n8n-nodes-base.writeFile",
+      "typeVersion": 1,
+      "position": [2050, 400]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=./generated-posts/batch-{{ $now.format('YYYYMMDD') }}/rejected/{{ $json.post_id }}.md",
+        "data": "=---\npost_id: {{ $json.post_id }}\nsource_file: {{ $json.source_file }}\nvariation: {{ $json.variation }}\nstatus: {{ $json.status }}\nquality_score: {{ $json.quality_score }}\nword_count: {{ $json.word_count }}\ngenerated_at: {{ $json.generated_at }}\n---\n\n# LinkedIn Post - {{ $json.variation }}\n\n❌ **REJECTED**\n\n## Issues Found\n{{ $json.issues.map((issue, i) => `${i+1}. ${issue}`).join('\\n') }}\n\n## Content (For Reference)\n\n{{ $json.full_text }}\n\n---\n\n## Metadata\n- Quality Score: {{ $json.quality_score }}/100\n- Status: ❌ REJECTED\n",
+        "options": {}
+      },
+      "id": "write-rejected",
+      "name": "Log Rejected Posts",
+      "type": "n8n-nodes-base.writeFile",
+      "typeVersion": 1,
+      "position": [2050, 500]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "multiplex",
+        "options": {}
+      },
+      "id": "merge-results",
+      "name": "Merge All Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [2250, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate batch summary report\nconst allPosts = $input.all();\n\nconst approved = allPosts.filter(p => p.json.status === 'APPROVED');\nconst needsRevision = allPosts.filter(p => p.json.status === 'NEEDS_REVISION');\nconst rejected = allPosts.filter(p => p.json.status === 'REJECTED');\n\nconst avgQualityScore = allPosts.reduce((sum, p) => sum + p.json.quality_score, 0) / allPosts.length;\n\n// Group by source file\nconst bySource = {};\nallPosts.forEach(post => {\n  const source = post.json.source_file;\n  if (!bySource[source]) {\n    bySource[source] = { approved: 0, revision: 0, rejected: 0, total: 0 };\n  }\n  bySource[source].total++;\n  if (post.json.status === 'APPROVED') bySource[source].approved++;\n  if (post.json.status === 'NEEDS_REVISION') bySource[source].revision++;\n  if (post.json.status === 'REJECTED') bySource[source].rejected++;\n});\n\n// Group by variation type\nconst byVariation = {};\nallPosts.forEach(post => {\n  const variation = post.json.variation;\n  if (!byVariation[variation]) {\n    byVariation[variation] = { approved: 0, revision: 0, rejected: 0, total: 0 };\n  }\n  byVariation[variation].total++;\n  if (post.json.status === 'APPROVED') byVariation[variation].approved++;\n  if (post.json.status === 'NEEDS_REVISION') byVariation[variation].revision++;\n  if (post.json.status === 'REJECTED') byVariation[variation].rejected++;\n});\n\n// Common issues\nconst allIssues = {};\nallPosts.forEach(post => {\n  if (post.json.issues) {\n    post.json.issues.forEach(issue => {\n      allIssues[issue] = (allIssues[issue] || 0) + 1;\n    });\n  }\n});\n\nconst topIssues = Object.entries(allIssues)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 5)\n  .map(([issue, count]) => ({ issue, count }));\n\nconst batchDate = new Date().toISOString().split('T')[0];\n\nreturn {\n  json: {\n    batch_id: `batch-${batchDate}`,\n    generated_at: new Date().toISOString(),\n    summary: {\n      total_posts: allPosts.length,\n      approved: approved.length,\n      needs_revision: needsRevision.length,\n      rejected: rejected.length,\n      approval_rate: Math.round((approved.length / allPosts.length) * 100),\n      avg_quality_score: Math.round(avgQualityScore)\n    },\n    by_source: bySource,\n    by_variation: byVariation,\n    top_issues: topIssues,\n    approved_posts: approved.map(p => ({\n      id: p.json.post_id,\n      variation: p.json.variation,\n      source: p.json.source_file,\n      score: p.json.quality_score\n    })),\n    needs_attention: needsRevision.concat(rejected).map(p => ({\n      id: p.json.post_id,\n      variation: p.json.variation,\n      source: p.json.source_file,\n      status: p.json.status,\n      score: p.json.quality_score,\n      issues: p.json.issues\n    }))\n  }\n};"
+      },
+      "id": "generate-summary",
+      "name": "Generate Batch Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2450, 400]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "terry@ai-whisperers.com",
+        "toEmail": "YOUR_EMAIL@gmail.com",
+        "subject": "=🤖 Content Generation Complete - {{ $json.summary.approved }} Posts Ready",
+        "emailFormat": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f5f5f5; }\n  .container { max-width: 650px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }\n  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }\n  .header h1 { margin: 0 0 10px 0; font-size: 28px; font-weight: 600; }\n  .summary { display: flex; justify-content: space-around; padding: 20px; background: #f8f9fa; border-bottom: 2px solid #e9ecef; }\n  .summary-item { text-align: center; }\n  .summary-number { font-size: 36px; font-weight: bold; margin: 0; }\n  .summary-number.approved { color: #28a745; }\n  .summary-number.revision { color: #ffc107; }\n  .summary-number.rejected { color: #dc3545; }\n  .summary-label { font-size: 12px; color: #666; text-transform: uppercase; margin-top: 5px; }\n  .content { padding: 30px; }\n  .metric { background: #f8f9fa; padding: 15px; margin: 10px 0; border-left: 4px solid #667eea; border-radius: 4px; }\n  .metric h3 { margin: 0 0 10px 0; color: #667eea; font-size: 16px; }\n  .section-title { color: #667eea; font-size: 18px; font-weight: 600; margin: 20px 0 10px 0; border-bottom: 2px solid #667eea; padding-bottom: 5px; }\n  .post-list { list-style: none; padding: 0; }\n  .post-item { background: #f8f9fa; padding: 10px 15px; margin: 8px 0; border-radius: 5px; border-left: 4px solid #28a745; font-size: 14px; }\n  .post-item.revision { border-left-color: #ffc107; }\n  .post-item.rejected { border-left-color: #dc3545; }\n  .issue-list { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 4px; }\n  .issue-item { margin: 5px 0; font-size: 14px; }\n  .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; }\n  .btn { display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 5px; font-size: 14px; }\n  table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px; }\n  th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }\n  th { background: #f8f9fa; font-weight: 600; }\n</style>\n</head>\n<body>\n<div class=\"container\">\n  <div class=\"header\">\n    <h1>🤖 Content Generation Complete</h1>\n    <p>Batch ID: {{ $json.batch_id }}</p>\n  </div>\n  \n  <div class=\"summary\">\n    <div class=\"summary-item\">\n      <div class=\"summary-number approved\">{{ $json.summary.approved }}</div>\n      <div class=\"summary-label\">✅ Approved</div>\n    </div>\n    <div class=\"summary-item\">\n      <div class=\"summary-number revision\">{{ $json.summary.needs_revision }}</div>\n      <div class=\"summary-label\">⚠️ Needs Revision</div>\n    </div>\n    <div class=\"summary-item\">\n      <div class=\"summary-number rejected\">{{ $json.summary.rejected }}</div>\n      <div class=\"summary-label\">❌ Rejected</div>\n    </div>\n  </div>\n  \n  <div class=\"content\">\n    <div class=\"metric\">\n      <h3>📊 Overall Performance</h3>\n      <p><strong>Total Posts Generated:</strong> {{ $json.summary.total_posts }}</p>\n      <p><strong>Approval Rate:</strong> {{ $json.summary.approval_rate }}%</p>\n      <p><strong>Average Quality Score:</strong> {{ $json.summary.avg_quality_score }}/100</p>\n    </div>\n\n    {{ $json.summary.approved > 0 ? '<h2 class=\"section-title\">✅ Ready to Publish</h2><ul class=\"post-list\">' + $json.approved_posts.map(post => '<li class=\"post-item\"><strong>' + post.variation + '</strong> from ' + post.source + '<br><small>Score: ' + post.score + '/100 | ID: ' + post.id + '</small></li>').join('') + '</ul>' : '' }}\n\n    <h2 class=\"section-title\">📈 Performance by Variation</h2>\n    <table>\n      <thead>\n        <tr>\n          <th>Variation</th>\n          <th>Approved</th>\n          <th>Revision</th>\n          <th>Rejected</th>\n          <th>Total</th>\n        </tr>\n      </thead>\n      <tbody>\n        {{ Object.keys($json.by_variation).map(key => '<tr><td>' + key + '</td><td>' + $json.by_variation[key].approved + '</td><td>' + $json.by_variation[key].revision + '</td><td>' + $json.by_variation[key].rejected + '</td><td>' + $json.by_variation[key].total + '</td></tr>').join('') }}\n      </tbody>\n    </table>\n\n    {{ $json.top_issues.length > 0 ? '<h2 class=\"section-title\">⚠️ Top Issues to Address</h2><div class=\"issue-list\">' + $json.top_issues.map(item => '<div class=\"issue-item\">' + item.issue + ' (' + item.count + ' posts)</div>').join('') + '</div>' : '' }}\n\n    {{ $json.needs_attention.length > 0 ? '<h2 class=\"section-title\">🔧 Posts Needing Attention</h2><ul class=\"post-list\">' + $json.needs_attention.slice(0, 10).map(post => '<li class=\"post-item ' + (post.status === 'REJECTED' ? 'rejected' : 'revision') + '\"><strong>' + post.variation + '</strong> from ' + post.source + '<br><small>Status: ' + post.status + ' | Score: ' + post.score + '/100</small><br><small>Issues: ' + post.issues.join('; ') + '</small></li>').join('') + '</ul>' : '' }}\n\n    <div style=\"text-align: center; margin: 30px 0;\">\n      <a href=\"file:///{{ process.cwd() }}/generated-posts/{{ $json.batch_id }}/\" class=\"btn\">📂 View All Generated Posts</a>\n    </div>\n\n    <div style=\"background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 4px;\">\n      <h3 style=\"color: #2e7d32; margin-top: 0;\">📝 Next Steps</h3>\n      <ol style=\"margin: 10px 0; padding-left: 20px; color: #1b5e20;\">\n        <li>Review approved posts in <code>generated-posts/{{ $json.batch_id }}/approved/</code></li>\n        <li>Edit posts in <code>needs-revision/</code> folder</li>\n        <li>Schedule approved posts using content calendar</li>\n        <li>Track performance after publishing</li>\n      </ol>\n    </div>\n  </div>\n  \n  <div class=\"footer\">\n    <p><strong>🤖 Terry Content Generator</strong> | AI-Whisperers</p>\n    <p style=\"margin: 5px 0;\">Powered by Claude 3.5 Sonnet • n8n Automation</p>\n    <p style=\"margin: 10px 0 0 0; font-size: 11px; color: #999;\">{{ $json.generated_at }}</p>\n  </div>\n</div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-summary-email",
+      "name": "Send Summary Report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2650, 400],
+      "credentials": {
+        "smtp": {
+          "id": "smtp_cred",
+          "name": "Terry Email"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 2 Weeks": {
+      "main": [
+        [
+          {
+            "node": "Find Context Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Context Files": {
+      "main": [
+        [
+          {
+            "node": "Parse File Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse File Paths": {
+      "main": [
+        [
+          {
+            "node": "Read File Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read File Content": {
+      "main": [
+        [
+          {
+            "node": "Process Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Content": {
+      "main": [
+        [
+          {
+            "node": "Batch Files for Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch Files for Generation": {
+      "main": [
+        [
+          {
+            "node": "Claude: Generate Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: Generate Posts": {
+      "main": [
+        [
+          {
+            "node": "Parse & Validate Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Validate Posts": {
+      "main": [
+        [
+          {
+            "node": "Route by Quality",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Quality": {
+      "main": [
+        [
+          {
+            "node": "Save Approved Posts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Needs Revision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Rejected Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Approved Posts": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Needs Revision": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Log Rejected Posts": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge All Results": {
+      "main": [
+        [
+          {
+            "node": "Generate Batch Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Batch Summary": {
+      "main": [
+        [
+          {
+            "node": "Send Summary Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "id": "content-generator",
+  "meta": {
+    "instanceId": "terry-content-01"
+  },
+  "tags": [
+    {
+      "name": "content-generation"
+    },
+    {
+      "name": "claude"
+    },
+    {
+      "name": "linkedin"
+    },
+    {
+      "name": "ai-whisperers"
+    }
+  ]
+}
