@@ -1,0 +1,131 @@
+{
+  "name": "Website Uptime Monitor (Simple)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "schedule-15min",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://ai-whisperers-portfolio-website.vercel.app/",
+        "timeout": 10000
+      },
+      "id": "http-request",
+      "name": "Check Website",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst statusCode = response.statusCode || 0;\n\nlet status = 'healthy';\nlet message = 'Website operational';\n\nif (statusCode >= 500) {\n  status = 'critical';\n  message = 'Website is DOWN';\n} else if (statusCode >= 400) {\n  status = 'error';\n  message = 'Website returning errors';\n} else if (statusCode === 0) {\n  status = 'critical';\n  message = 'Website unreachable';\n}\n\nreturn {\n  json: {\n    url: 'https://ai-whisperers-portfolio-website.vercel.app/',\n    status: status,\n    status_code: statusCode,\n    message: message,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "analyze-response",
+      "name": "Analyze Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.status}}",
+              "operation": "notEqual",
+              "value2": "healthy"
+            }
+          ]
+        }
+      },
+      "id": "if-unhealthy",
+      "name": "IF Problem Detected",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "terry@ai-whisperers.com",
+        "toEmail": "alerts@ai-whisperers.com",
+        "subject": "=⚠️ Website Alert: {{$json.status}}",
+        "text": "=Status: {{$json.message}}\nStatus Code: {{$json.status_code}}\nURL: {{$json.url}}\nTime: {{$json.timestamp}}"
+      },
+      "id": "send-email",
+      "name": "Send Alert Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp_cred",
+          "name": "Terry Email"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Check Website",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Website": {
+      "main": [
+        [
+          {
+            "node": "Analyze Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Response": {
+      "main": [
+        [
+          {
+            "node": "IF Problem Detected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Problem Detected": {
+      "main": [
+        [
+          {
+            "node": "Send Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1",
+  "id": "website-monitor-simple"
+}
