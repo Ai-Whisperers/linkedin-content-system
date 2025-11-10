@@ -3,7 +3,9 @@
   "version": "2.0.0",
   "description": "AI-Whisperers Content Generation System - Transform context into structured LinkedIn posts",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "generate": "node generate-content.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ai-Whisperers/linkedin-content-system.git"
@@ -21,6 +23,7 @@
     "url": "https://github.com/Ai-Whisperers/linkedin-content-system/issues"
   },
   "homepage": "https://github.com/Ai-Whisperers/linkedin-content-system#readme",
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
 }

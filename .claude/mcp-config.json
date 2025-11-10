@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "n8n-automation": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\kyrian\\Documents\\contentCreator\\mcp-server-n8n\\dist\\index.js"
+      ]
+    }
+  }
+}

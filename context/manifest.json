@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "description": "Deterministic context manifest for content generation",
+  "last_updated": "2025-01-06",
+  "sources": [
+    {
+      "path": "context/services/custom-ai.md",
+      "category": "services",
+      "priority": 1,
+      "required": true,
+      "checksum": null,
+      "description": "Custom AI solutions and services"
+    },
+    {
+      "path": "context/services/automation.md",
+      "category": "services",
+      "priority": 1,
+      "required": true,
+      "checksum": null,
+      "description": "Automation services and capabilities"
+    },
+    {
+      "path": "context/brand/voice.md",
+      "category": "brand",
+      "priority": 1,
+      "required": true,
+      "checksum": null,
+      "description": "Brand voice guidelines"
+    },
+    {
+      "path": "context/brand/rules.md",
+      "category": "brand",
+      "priority": 1,
+      "required": true,
+      "checksum": null,
+      "description": "Content generation rules and constraints"
+    }
+  ],
+  "generation_config": {
+    "variations_per_batch": 5,
+    "word_count_min": 120,
+    "word_count_max": 180,
+    "hashtag_count": 4,
+    "emoji_max": 2,
+    "forbidden_words": [
+      "revolutionary",
+      "game-changing",
+      "disruptive",
+      "transform your",
+      "paradigm shift",
+      "synergy"
+    ]
+  },
+  "content_distribution": {
+    "services": 0.6,
+    "educational": 0.4
+  },
+  "validation_thresholds": {
+    "min_quality_score": 70,
+    "max_context_words": 50000,
+    "min_context_words": 100
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@ai-whisperers/mcp-server-n8n",
+  "version": "1.0.0",
+  "description": "MCP server for n8n workflow automation",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-server-n8n": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "n8n",
+    "workflow",
+    "automation"
+  ],
+  "author": "AI-Whisperers",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "axios": "^1.7.0",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
