@@ -1,0 +1,17 @@
+{
+  "id": "msg_01abc123",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"posts\":[{\"variation\":\"service-showcase\",\"hook\":\"Practical guide to AI automation with n8n and Claude\",\"body\":\"At AI-Whisperers, we help teams build custom AI workflows without the complexity. Our approach: start small, validate value, then scale. No hype, just working solutions that integrate with your existing tools.\",\"cta\":\"Want to learn how AI automation can work for your team?\",\"hashtags\":[\"AI\",\"Automation\",\"n8n\",\"Claude\"],\"word_count\":150}]}"
+    }
+  ],
+  "model": "claude-3-5-sonnet-20241022",
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 1500,
+    "output_tokens": 300
+  }
+}

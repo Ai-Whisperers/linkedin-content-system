@@ -1,6 +1,6 @@
-# n8n MCP Server for AI-Whisperers Content Generator
+# n8n MCP Server for AI-Whisperers LinkedIn Content Generator
 
-Model Context Protocol (MCP) server that enables Claude Code to directly control and monitor n8n workflows, specifically designed for the AI-Whisperers content generation system.
+Model Context Protocol (MCP) server that enables Claude Code to directly control and monitor the n8n LinkedIn content generation workflow.
 
 ## Features
 
@@ -57,23 +57,16 @@ CONTENT_DIR=C:\Users\kyrian\Documents\contentCreator
 4. Copy the generated key
 5. Paste it into your `.env` file
 
-#### Activating Workflows for Webhook Triggers
+#### Activating Workflow for Webhook Triggers
 
-**IMPORTANT:** For webhook triggers to work, your workflows must be **ACTIVE** in n8n:
+**IMPORTANT:** For webhook triggers to work, your workflow must be **ACTIVE** in n8n:
 
 1. Open n8n in your browser
-2. Import the workflow files:
-   - `workflows/content-generator-daily.json`
-   - `workflows/content-generator-linkedin.json`
-3. For each workflow:
-   - Click the **Active** toggle in the top right (it should turn green)
-   - Verify the webhook trigger node shows "Waiting for webhook call"
-4. Test webhook endpoints:
+2. Import the workflow file: `workflows/content-generator-linkedin.json`
+3. Click the **Active** toggle in the top right (it should turn green)
+4. Verify the webhook trigger node shows "Waiting for webhook call"
+5. Test webhook endpoint:
    ```bash
-   # Daily workflow
-   curl -X POST http://localhost:5678/webhook/content-generator
-
-   # LinkedIn workflow
    curl -X POST http://localhost:5678/webhook/content-generator-linkedin
    ```
 
@@ -98,17 +91,16 @@ set N8N_API_KEY=your_api_key_here
 ### Workflow Management
 
 #### `execute_workflow`
-Execute an n8n workflow by ID or name using webhook triggers (compatible with n8n 1.118.2).
+Execute the LinkedIn content generation workflow using webhook triggers (compatible with n8n 1.118.2).
 
-**Supported Workflows:**
-- `content-generator-daily` or `AI-Whisperers Daily Content Generator`
+**Supported Workflow:**
 - `content-generator-linkedin` or `AI-Whisperers Content Generator v2`
 
-**Important:** Workflows must be ACTIVE in n8n for webhooks to work.
+**Important:** Workflow must be ACTIVE in n8n for webhooks to work.
 
 ```typescript
 {
-  workflowId: "content-generator-daily",
+  workflowId: "content-generator-linkedin",
   inputData: { /* optional input */ }
 }
 ```
@@ -146,20 +138,20 @@ View recent workflow executions.
 ```
 
 #### `activate_workflow`
-Enable a workflow's scheduled triggers.
+Enable the workflow's scheduled triggers.
 
 ```typescript
 {
-  workflowId: "content-generator-daily"
+  workflowId: "content-generator-linkedin"
 }
 ```
 
 #### `deactivate_workflow`
-Disable a workflow's scheduled triggers.
+Disable the workflow's scheduled triggers.
 
 ```typescript
 {
-  workflowId: "content-generator-daily"
+  workflowId: "content-generator-linkedin"
 }
 ```
 
@@ -186,14 +178,14 @@ Validate a post against quality guidelines.
 
 ## Usage Examples
 
-### Example 1: Execute Daily Content Generator
+### Example 1: Execute LinkedIn Content Generator
 
 ```
-Execute the daily content generation workflow and monitor its progress.
+Execute the LinkedIn content generation workflow and monitor its progress.
 ```
 
 Claude will:
-1. Call `execute_workflow` with workflowId: "content-generator-daily"
+1. Call `execute_workflow` with workflowId: "content-generator-linkedin"
 2. Get the execution ID
 3. Poll `get_workflow_status` until completion
 4. Read results with `read_generated_posts`
@@ -222,10 +214,10 @@ Claude will:
 3. Filter for failed executions
 4. Report errors and timing information
 
-### Example 4: Automated Daily Workflow
+### Example 4: Automated Content Generation Flow
 
 ```
-Run the daily content generator, wait for completion, validate all posts,
+Run the LinkedIn content generator, wait for completion, validate all posts,
 and create a summary report.
 ```
 
@@ -240,14 +232,14 @@ Claude will orchestrate:
    - Quality score distribution
    - Issues found
 
-## Integration with Content Generator
+## Integration with LinkedIn Content Generator
 
-This MCP server is specifically designed for the AI-Whisperers content generation workflow:
+This MCP server is specifically designed for the AI-Whisperers LinkedIn content generation workflow:
 
-### Automated Daily Flow
+### Automated Workflow Flow
 
 ```
-1. Claude executes: execute_workflow("content-generator-daily")
+1. Claude executes: execute_workflow("content-generator-linkedin")
 2. Workflow runs through all steps:
    - Load manifest
    - Read context files
@@ -295,9 +287,7 @@ generated-posts/
 
 ### "Workflow not found" or "No webhook mapping found"
 - Use `list_workflows` to see available workflow IDs
-- Supported workflow IDs/names:
-  - `content-generator-daily` or `AI-Whisperers Daily Content Generator`
-  - `content-generator-linkedin` or `AI-Whisperers Content Generator v2`
+- Supported workflow ID: `content-generator-linkedin` or `AI-Whisperers Content Generator v2`
 - Check that the workflow exists in n8n
 - Verify the workflow ID matches exactly (case-sensitive)
 
@@ -347,7 +337,7 @@ Content Generator
 
 ## Related Files
 
-- **Workflow Definition**: `workflows/content-generator-daily.json`
+- **Workflow Definition**: `workflows/content-generator-linkedin.json`
 - **Content Manifest**: `context/manifest.json`
 - **Brand Guidelines**: `context/brand/rules.md`
 - **Quality Checklist**: `brand-docs/QUALITY_CHECKLIST.md`

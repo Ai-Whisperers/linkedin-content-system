@@ -1,40 +1,34 @@
-# Terry n8n Workflows
+# LinkedIn Content Generator Workflow
 
-**Production-ready workflows for AI-Whisperers automation**
+**AI-powered LinkedIn post generation for AI-Whisperers**
 
-Last updated: 2025-11-05
-
----
-
-## 🚀 Production Workflows (3 Active)
-
-| Priority | File | Name | Frequency | Purpose | Status |
-|----------|------|------|-----------|---------|--------|
-| **P0** | `content-generator-linkedin.json` | AI-Whisperers Content Generator | Every 2 weeks | Generate LinkedIn posts from context | ✅ Ready |
-| **P1** | `website-uptime-monitor.json` | Website Uptime Monitor | Every 15 min | Monitor website availability | ✅ Active |
-| **P2** | `github-org-health-monitor.json` | GitHub Organization Health | Every 6 hours | Monitor GitHub repositories with AI | ✅ Ready |
+Last updated: 2025-11-10
 
 ---
 
-## 📦 Archived Workflows
+## Overview
 
-Legacy workflows moved to `archive/` folder:
-- `01-github-health-check.json` - Superseded (broken JSON + outdated)
-- `03-github-health-claude.json` - Superseded (slower loop architecture)
+Automated workflow that generates high-quality LinkedIn posts from your context files using Claude AI, with built-in quality validation and routing.
 
-See [`WORKFLOW_ANALYSIS.md`](./WORKFLOW_ANALYSIS.md) for detailed comparison.
+**File:** `content-generator-linkedin.json`
+
+**Schedule:** Every 2 weeks (bi-weekly)
+
+**Output:** 95 posts from 19 context files (~20-30 approved per batch)
+
+**ROI:** Saves 20+ hours/week of manual content creation
 
 ---
 
 ## Quick Start
 
-### 1. Import Workflows to n8n
+### 1. Import Workflow to n8n
 
 **Via n8n UI:**
 1. Open n8n at `http://localhost:5678`
 2. Click "Workflows" → "Add workflow"
 3. Click "..." menu → "Import from File"
-4. Select workflow JSON file
+4. Select `content-generator-linkedin.json`
 5. Click "Open"
 
 **Via API:**
@@ -42,12 +36,10 @@ See [`WORKFLOW_ANALYSIS.md`](./WORKFLOW_ANALYSIS.md) for detailed comparison.
 curl -X POST "http://localhost:5678/api/v1/workflows" \
   -u "username:password" \
   -H "Content-Type: application/json" \
-  -d @website-uptime-monitor.json
+  -d @content-generator-linkedin.json
 ```
 
 ### 2. Configure Credentials
-
-All workflows need these credentials configured in n8n:
 
 #### Required Credentials
 
@@ -55,24 +47,14 @@ All workflows need these credentials configured in n8n:
 - Type: HTTP Header Auth
 - Header: `x-api-key`
 - Value: Your Anthropic API key
-- Used by: Content Generator, GitHub Monitor
+- Get key from: https://console.anthropic.com/
 
 **SMTP Email (`smtp_cred`):**
 - Type: SMTP
-- Host: Your email provider
+- Host: Your email provider (e.g., smtp.gmail.com)
 - User: terry@ai-whisperers.com (or your email)
 - Password: App password
-- Used by: All workflows
-
-**GitHub API (`github_cred`):**
-- Type: GitHub API
-- Access Token: Personal Access Token
-- Scopes: `repo`, `read:org`
-- Used by: GitHub Monitor
-
-**WhatsApp API (Optional):**
-- Type: HTTP Header Auth
-- Used by: Website Monitor (critical alerts only)
+- Used for: Summary email notifications
 
 ### 3. Test Manually
 
@@ -80,8 +62,9 @@ Before activating:
 1. Open workflow in n8n
 2. Click "Execute Workflow" (top right)
 3. Check output of each node
-4. Verify alerts are sent
-5. Fix any credential issues
+4. Verify posts are generated and saved correctly
+5. Check that summary email is sent
+6. Fix any credential issues
 
 ### 4. Activate
 
@@ -91,76 +74,57 @@ Before activating:
 
 ---
 
-## Workflow Details
+## How It Works
 
-### P0: Content Generator
+### Workflow Steps
 
-**File:** `content-generator-linkedin.json`
+1. **Load Manifest** - Reads `context/manifest.json` to get list of context files
+2. **Read Context Files** - Loads all markdown files from `/context/` directory
+3. **Merge Contexts** - Combines context files for batch processing
+4. **Generate Posts** - Calls Claude API to create 5 post variations per context:
+   - How-To
+   - Case Study
+   - Opinion
+   - Framework
+   - Metric-Driven
+5. **Parse & Validate** - Checks quality criteria:
+   - Word count: 120-180 words
+   - Hashtags: Exactly 4
+   - Emojis: Max 2
+   - Forbidden words: None
+6. **Route by Status** - Directs posts to folders:
+   - ✅ Approved
+   - ⚠️ Needs Revision
+   - ❌ Rejected
+7. **Save to Files** - Writes posts to organized folder structure
+8. **Send Summary Email** - Comprehensive report with statistics
 
-**What it does:**
-- Scans `/context/` directory for all .md files
-- Generates 5 post variations per context file (Claude 3.5 Sonnet)
-  - How-To
-  - Case Study
-  - Opinion
-  - Framework
-  - Metric-Driven
-- Validates quality (word count, hashtags, buzzwords, emojis)
-- Routes by status: Approved / Needs Revision / Rejected
-- Saves to organized folders
-- Sends comprehensive summary email
+### Output Structure
 
-**Schedule:** Every 2 weeks (bi-weekly)
+```
+generated-posts/
+└── batch-YYYYMMDD/
+    ├── approved/
+    │   └── service-showcase-v2.0.0-20251110-0.md
+    └── needs-revision/
+        └── tool-tutorial-v2.0.0-20251110-1.md
+```
 
-**Expected output:** 95 posts from 19 context files (~20-30 approved)
+### Quality Validation Rules
 
-**ROI:** Saves 20+ hours/week of manual content creation
+Posts are automatically validated against these criteria:
 
----
+**Approval Requirements:**
+- Word count: 120-180 words
+- Hashtags: Exactly 4
+- Emojis: 0-2 maximum
+- No forbidden buzzwords
+- No excessive jargon
 
-### P1: Website Uptime Monitor
-
-**File:** `website-uptime-monitor.json`
-
-**What it does:**
-- Checks website availability every 15 minutes
-- Monitors: https://ai-whisperers-portfolio-website.vercel.app/
-- Analyzes response time and HTTP status codes
-- Routes by severity:
-  - Healthy (200, <3s): No action
-  - Warning (200, >3s): Email alert
-  - Critical (5xx, 4xx): WhatsApp alert
-- Tracks uptime percentage
-
-**Schedule:** Every 15 minutes
-
-**Why keep:** Different from GitHub monitoring, real-time alerts critical for customer-facing services
-
----
-
-### P2: GitHub Organization Health
-
-**File:** `github-org-health-monitor.json`
-
-**What it does:**
-- Monitors 6 GitHub repositories in parallel
-- Analyzes health scores (activity, issues, description)
-- Aggregates organization-wide report
-- Uses Claude AI for analysis (only when problems detected)
-- Single consolidated email report
-- Tracks trends over time
-
-**Schedule:** Every 6 hours (4x daily)
-
-**Repositories monitored:**
-1. work-hours-automated-reports
-2. Company-Information
-3. agentic-schemas
-4. ai-whisperers-portfolio-website
-5. WPG-Amenities
-6. contentCreator
-
-**Architecture:** Parallel (6x faster than loop-based predecessors)
+**Status Routing:**
+- ✅ **Approved** - Meets all criteria, ready to publish
+- ⚠️ **Needs Revision** - Minor issues, may be salvageable
+- ❌ **Rejected** - Major issues, needs rewrite
 
 ---
 
@@ -176,8 +140,8 @@ Edit the Schedule Trigger node:
     "rule": {
       "interval": [
         {
-          "field": "hours",
-          "hoursInterval": 6  // Change frequency
+          "field": "weeks",
+          "weeksInterval": 2  // Change frequency here
         }
       ]
     }
@@ -185,14 +149,7 @@ Edit the Schedule Trigger node:
 }
 ```
 
-### Add Repositories (GitHub Monitor)
-
-Edit nodes checking each repo (parallel architecture):
-- Duplicate a "Check: repo-name" node
-- Update URL to new repo
-- Add merge connection
-
-### Adjust Quality Thresholds (Content Generator)
+### Adjust Quality Thresholds
 
 In "Parse & Validate Posts" node:
 
@@ -206,17 +163,35 @@ if (post.word_count < 120 || post.word_count > 180) {
 if (post.hashtags.length !== 4) {
   issues.push('Must have exactly 4 hashtags');
 }
+
+// Emoji limit
+if (post.emoji_count > 2) {
+  issues.push('Too many emojis');
+}
 ```
 
-### Change Alert Emails
+### Change Email Recipient
 
-Update "Send Email" nodes:
+Update "Send Email" node:
 ```json
 {
   "fromEmail": "terry@ai-whisperers.com",
   "toEmail": "your-email@domain.com",  // Change here
-  "subject": "Your custom subject"
+  "subject": "LinkedIn Content Generated - Batch YYYYMMDD"
 }
+```
+
+### Add/Remove Post Types
+
+In the Claude API call, modify the prompt to request different post variations:
+
+```
+Generate 5 variations:
+1. How-To (step-by-step guide)
+2. Case Study (real example)
+3. Opinion (thought leadership)
+4. Framework (structured approach)
+5. Metric-Driven (data-backed insight)
 ```
 
 ---
@@ -250,18 +225,9 @@ Update "Send Email" nodes:
 4. User: `apikey`
 5. Password: Your SendGrid API key
 
-### GitHub API
-
-1. Go to https://github.com/settings/tokens
-2. Generate new token (classic)
-3. Scopes: `repo`, `read:org`
-4. In n8n: Credentials → GitHub API
-5. Access Token: Paste token
-6. Name: `github_cred`
-
 ---
 
-## Monitoring & Maintenance
+## Monitoring & Troubleshooting
 
 ### Check Workflow Executions
 
@@ -278,115 +244,118 @@ Update "Send Email" nodes:
 - Check n8n is running: `docker ps`
 
 **Credentials errors (401, 403):**
-- Re-check API keys
-- Verify token hasn't expired
-- Check token has correct scopes
+- Re-check Anthropic API key
+- Verify key hasn't expired
+- Check SMTP credentials are correct
 
 **Timeout errors:**
-- Increase timeout in HTTP nodes
+- Increase timeout in Claude API HTTP node (default: 60s)
+- Large batches may need 120-180s timeout
 - Check network connectivity
-- Verify API endpoints are reachable
 
 **Email not sending:**
 - Test SMTP credentials manually
 - Check spam folder
 - Verify from/to addresses are correct
 
----
-
-## Architecture Decisions
-
-### Why Parallel over Loop? (GitHub Monitor)
-
-**Loop-based (archived 03):**
-```
-For each repo:
-  → Fetch → Analyze → Send Email
-```
-- Sequential processing (slow)
-- Multiple emails
-- Can't aggregate org-wide insights
-
-**Parallel (current 02):**
-```
-Fetch all repos simultaneously
-→ Merge results
-→ Single analysis
-→ One consolidated email
-```
-- 6x faster
-- Better UX
-- Organization-level insights
-
-### Why Conditional AI? (GitHub Monitor)
-
-Claude API costs ~$0.025 per request.
-
-**Always-on AI:**
-- 4 runs/day × $0.025 = $0.10/day = $3/month
-- Often analyzes "all healthy" (wasteful)
-
-**Conditional AI:**
-- Only when problems detected
-- Average: ~1 problem/week = $0.30/month
-- 90% cost reduction
-
-### Why Quality Validation? (Content Generator)
-
-Without validation:
-- 30-40% posts contain buzzwords
-- 20% wrong word count
-- Manual review takes 30+ min
-
-With validation:
-- Auto-routes by quality
-- Focus review time on good content
-- 20-30% approval rate (expected)
+**Low approval rate (<10%):**
+- Review forbidden words list
+- Adjust quality thresholds
+- Check context files for clarity
+- Update brand guidelines
 
 ---
 
 ## Performance Metrics
 
-### Content Generator
-- **Time saved:** 20 hours/week
-- **Output:** 95 posts per run
-- **Approval rate:** 20-30%
-- **Cost:** ~$20-30/month (Claude API)
+### Expected Results
 
-### Website Monitor
-- **Detection time:** <15 minutes
-- **False positives:** <5%
-- **Uptime tracking:** Real-time
+- **Execution time:** 3-5 minutes for 19 context files
+- **Posts generated:** 95 (5 per context file)
+- **Approval rate:** 20-30% (~20-30 posts)
+- **Needs revision:** 40-50% (~40-45 posts)
+- **Rejected:** 20-30% (~20-25 posts)
+- **Cost per run:** ~$1.50-2.00 (Claude API)
+- **Monthly cost:** ~$3-4 (bi-weekly schedule)
 
-### GitHub Monitor
-- **Processing time:** 30 seconds (parallel)
-- **Cost:** ~$0.30/month (conditional AI)
-- **Coverage:** 6 repositories
+### Time Savings
+
+**Manual Process:**
+- Research: 2 hours
+- Writing: 15 hours
+- Editing: 3 hours
+- Total: 20 hours/week
+
+**Automated Process:**
+- Review approved: 30 min
+- Edit revisions: 2 hours
+- Total: 2.5 hours/week
+
+**Savings:** 17.5 hours/week = 87.5% time reduction
+
+---
+
+## Architecture Decisions
+
+### Why Quality Validation?
+
+**Without validation:**
+- 30-40% posts contain buzzwords
+- 20% wrong word count
+- Manual review takes 30+ min
+- Hard to prioritize which posts to review
+
+**With validation:**
+- Auto-routes by quality
+- Focus review time on approved posts
+- 20-30% approval rate is expected and healthy
+- Clear action items for revision posts
+
+### Why Batch Processing?
+
+**Advantages:**
+- Single API call for all contexts (faster)
+- Consistent tone across posts
+- Better cost efficiency
+- Organized output structure
+- Easy to track batches over time
+
+**Trade-offs:**
+- All-or-nothing execution (if one fails, need to retry all)
+- Larger timeout needed
+- More memory usage
 
 ---
 
 ## Future Enhancements
 
-### Content Generator v2
-- [ ] Auto-publish approved posts to LinkedIn
-- [ ] A/B test post variations
-- [ ] Performance tracking integration
-- [ ] Image generation for posts
+### Planned Features
 
-### Monitoring v2
-- [ ] Predictive alerts (ML-based)
-- [ ] Auto-remediation (safe fixes)
-- [ ] Slack integration
-- [ ] Dashboard visualization
+- [ ] Auto-publish approved posts to LinkedIn API
+- [ ] A/B test different post variations
+- [ ] Performance tracking integration (engagement metrics)
+- [ ] Image generation for posts (AI-generated visuals)
+- [ ] Personalized post variations based on audience segments
+- [ ] Multi-language support
+- [ ] Integration with content calendar
+
+---
+
+## Related Files
+
+- **Workflow Definition**: `content-generator-linkedin.json`
+- **Content Manifest**: `context/manifest.json`
+- **Brand Guidelines**: `context/brand/rules.md`
+- **Quality Checklist**: `brand-docs/QUALITY_CHECKLIST.md`
+- **MCP Server**: `../mcp-server-n8n/` (programmatic control)
 
 ---
 
 ## Getting Help
 
 **Documentation:**
-- Analysis: [`WORKFLOW_ANALYSIS.md`](./WORKFLOW_ANALYSIS.md)
-- Setup: [`../SETUP_GUIDE.md`](../SETUP_GUIDE.md)
-- Troubleshooting: [`../TROUBLESHOOTING_GUIDE.md`](../TROUBLESHOOTING_GUIDE.md)
+- Setup Guide: [`../SETUP_GUIDE.md`](../SETUP_GUIDE.md) (if exists)
+- Troubleshooting: [`../TROUBLESHOOTING_GUIDE.md`](../TROUBLESHOOTING_GUIDE.md) (if exists)
 
 **Support:**
 - GitHub Issues: https://github.com/Ai-Whisperers/contentCreator/issues
@@ -394,6 +363,6 @@ With validation:
 
 ---
 
-**Workflows by AI-Whisperers**
+**LinkedIn Content Generator by AI-Whisperers**
 
-*Automate thoughtfully. Measure everything. Scale smart.*
+*Automate thoughtfully. Create consistently. Scale smart.*
